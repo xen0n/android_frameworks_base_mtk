@@ -1,7 +1,4 @@
 /*
- * Copyright (c) 2013-2014, The Linux Foundation. All rights reserved.
- * Not a Contribution.
- *
  * Copyright (C) 2008 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -22,13 +19,16 @@ package android.telephony;
 import com.android.i18n.phonenumbers.AsYouTypeFormatter;
 import com.android.i18n.phonenumbers.PhoneNumberUtil;
 
-import android.os.SystemProperties;
 import android.telephony.PhoneNumberUtils;
 import android.text.Editable;
 import android.text.Selection;
 import android.text.TextWatcher;
 
 import java.util.Locale;
+
+/** M: For test mode(CTA/FTA/IOT), mtk04070, 2012.02.06 @{ */
+import android.os.SystemProperties;
+/** @} */
 
 /**
  * Watches a {@link android.widget.TextView} and if a phone number is entered
@@ -56,6 +56,15 @@ public class PhoneNumberFormattingTextWatcher implements TextWatcher {
 
     private AsYouTypeFormatter mFormatter;
 
+    /** M: For test mode(CTA/FTA/IOT), mtk04070, 2012.02.06 @{ */
+    private static String TEST_MODE_PROPERTY_KEY = "gsm.gcf.testmode";
+    private static final int TEST_MODE_CTA = 1;
+    private static final int TEST_MODE_FTA = 2;
+    private static final int TEST_MODE_IOT = 3;
+    private static final int TEST_MODE_UNKNOWN = -1;
+    private int testMode = 0;
+    /** @} */
+
     /**
      * The formatting is based on the current system locale and future locale changes
      * may not take effect on this instance.
@@ -71,6 +80,8 @@ public class PhoneNumberFormattingTextWatcher implements TextWatcher {
      * where the phone number is being entered.
      */
     public PhoneNumberFormattingTextWatcher(String countryCode) {
+        /** M: Get test mode from SystemProperties, mtk04070, 2012.02.06 */
+        getTestMode();
         if (countryCode == null) throw new IllegalArgumentException();
         mFormatter = PhoneNumberUtil.getInstance().getAsYouTypeFormatter(countryCode);
     }
@@ -82,7 +93,7 @@ public class PhoneNumberFormattingTextWatcher implements TextWatcher {
             return;
         }
         // If the user manually deleted any non-dialable characters, stop formatting
-        if (count > 0 && hasSeparator(s, start, count)) {
+        if (count > 0 && count > after && hasSeparator(s, start, count)) {
             stopFormatting();
         }
     }
@@ -93,13 +104,21 @@ public class PhoneNumberFormattingTextWatcher implements TextWatcher {
             return;
         }
         // If the user inserted any non-dialable characters, stop formatting
-        if (count > 0 && hasSeparator(s, start, count)) {
+        if (count > 0 && count > before && hasSeparator(s, start, count)) {
             stopFormatting();
         }
     }
 
     @Override
     public synchronized void afterTextChanged(Editable s) {
+        /** M: FTA test : dial number "+0123456789" will be changed to "+123456789",
+               so DO NOT format the input dial string, and return directly.
+               mtk04070, 2012.02.06 @{ */
+        if (testMode == TEST_MODE_FTA) {
+           return;
+        }
+        /** @} */
+
         if (mStopFormatting) {
             // Restart the formatting when all texts were clear.
             mStopFormatting = !(s.length() == 0);
@@ -121,7 +140,6 @@ public class PhoneNumberFormattingTextWatcher implements TextWatcher {
             }
             mSelfChange = false;
         }
-        PhoneNumberUtils.ttsSpanAsPhoneNumber(s, 0, s.length());
     }
 
     /**
@@ -157,13 +175,8 @@ public class PhoneNumberFormattingTextWatcher implements TextWatcher {
     }
 
     private String getFormattedNumber(char lastNonSeparator, boolean hasCursor) {
-        String formattedNum = hasCursor ? mFormatter
-                .inputDigitAndRememberPosition(lastNonSeparator)
+        return hasCursor ? mFormatter.inputDigitAndRememberPosition(lastNonSeparator)
                 : mFormatter.inputDigit(lastNonSeparator);
-        if (!SystemProperties.getBoolean("persist.env.sys.hypenenable", true)) {
-            return formattedNum.replace("-", "");
-        }
-        return formattedNum;
     }
 
     private void stopFormatting() {
@@ -180,4 +193,18 @@ public class PhoneNumberFormattingTextWatcher implements TextWatcher {
         }
         return false;
     }
+
+    /**
+     * Get test mode from SystemProperties.
+     * M: DO NOT format the input dial string when in FTA test mode, mtk04070, 2012.02.06
+     */
+    private void getTestMode() {
+        try {
+            testMode = Integer.valueOf(SystemProperties.get(TEST_MODE_PROPERTY_KEY)).intValue();
+        } catch (Exception e) {
+            Rlog.d("getTestMode", "Invalid property value");
+            testMode = TEST_MODE_UNKNOWN;
+        }
+        Rlog.d("getTestMode", "Test mode is " + testMode);
+   }
 }

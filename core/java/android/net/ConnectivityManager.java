@@ -420,11 +420,38 @@ public class ConnectivityManager {
      */
     public static final int TYPE_VPN = 17;
 
+    /** M: start */
+
+    /**
+     * Device Managment purpose.
+     * {@hide}
+     * @internal
+     */
+    public static final int TYPE_MOBILE_DM = 34;
+    /** {@hide} */
+    public static final int TYPE_MOBILE_WAP = 35;
+    /** {@hide} */
+    public static final int TYPE_MOBILE_NET = 36;
+    /** {@hide} */
+    public static final int TYPE_MOBILE_CMMAIL = 37;
+    /** {@hide} */
+    public static final int TYPE_MOBILE_TETHERING = 38;
+    /** {@hide} */
+    public static final int TYPE_MOBILE_RCSE = 39;
+    /** M: end */
+
+    ///M @add  for 3gdongle
+    /** {@hide} */ 
+    public static final int TYPE_TEDONGLE = 49;
+
     /** {@hide} */
     public static final int MAX_RADIO_TYPE   = TYPE_VPN;
 
+	/** {@hide} */
+	public static final int MAX_AOSP_NETWORK_TYPE = TYPE_VPN;
+
     /** {@hide} */
-    public static final int MAX_NETWORK_TYPE = TYPE_VPN;
+    public static final int MAX_NETWORK_TYPE = TYPE_TEDONGLE;
 
     /**
      * If you want to set the default network preference,you can directly
@@ -469,7 +496,7 @@ public class ConnectivityManager {
      * @return a boolean.  {@code true} if the type is valid, else {@code false}
      */
     public static boolean isNetworkTypeValid(int networkType) {
-        return networkType >= 0 && networkType <= MAX_NETWORK_TYPE;
+        return (networkType >= 0 && networkType <= MAX_AOSP_NETWORK_TYPE) || (networkType >= TYPE_MOBILE_DM && networkType <= MAX_NETWORK_TYPE);
     }
 
     /**
@@ -1395,10 +1422,10 @@ public class ConnectivityManager {
         if (b != null) {
             try {
                 ITelephony it = ITelephony.Stub.asInterface(b);
-                int subId = SubscriptionManager.getDefaultDataSubId();
-                Log.d("ConnectivityManager", "getMobileDataEnabled()+ subId=" + subId);
-                boolean retVal = it.getDataEnabled(subId);
-                Log.d("ConnectivityManager", "getMobileDataEnabled()- subId=" + subId
+                // int subId = SubscriptionManager.getDefaultDataSubId();
+                Log.d("ConnectivityManager", "getMobileDataEnabled()+ subId=<none for MTK>");
+                boolean retVal = it.getDataEnabled();
+                Log.d("ConnectivityManager", "getMobileDataEnabled()- subId=<none for MTK>"
                         + " retVal=" + retVal);
                 return retVal;
             } catch (RemoteException e) { }

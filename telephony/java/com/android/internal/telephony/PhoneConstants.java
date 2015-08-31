@@ -87,6 +87,9 @@ public class PhoneConstants {
     public static final String DATA_NETWORK_ROAMING_KEY = "networkRoaming";
     public static final String PHONE_IN_ECM_STATE = "phoneinECMState";
 
+    // VOLTE
+    public static final String DATA_IMS_CHANGED_KEY = "imsDataChanged";
+
     public static final String REASON_LINK_PROPERTIES_CHANGED = "linkPropertiesChanged";
 
     /**
@@ -136,6 +139,34 @@ public class PhoneConstants {
     /** APN type for IA Emergency PDN */
     public static final String APN_TYPE_EMERGENCY = "emergency";
 
+    /** M: APN type for device management */
+    public static final String APN_TYPE_DM = "dm";
+    /** M: APN type for WAP */
+    public static final String APN_TYPE_WAP = "wap";
+    /** M: APN type for NET */
+    public static final String APN_TYPE_NET = "net";
+    /** M: APN type for CMMAIL */
+    public static final String APN_TYPE_CMMAIL = "cmmail";
+    /** M: APN type for dedicate tethering apn */
+    public static final String APN_TYPE_TETHERING = "tethering";
+    /** M: APN type for RCSE */
+    public static final String APN_TYPE_RCSE = "rcse";
+
+    /* M: SS part */
+    // CFU query type
+    public static final String CFU_QUERY_TYPE_PROP = "persist.radio.cfu.querytype";
+    public static final String CFU_QUERY_TYPE_DEF_VALUE = "0";
+    /* M: SS part end */
+
+    public static final String CAPABILITY_SWITCH_PROP = "persist.radio.simswitch";
+    // FIXME: This looks to be used as default phoneId, rename
+    // or use SubscriptionManager.DEFAULT_SUB_ID
+    public static final int DEFAULT_SUBSCRIPTION = 0;
+
+    // FIXME: This looks to be used as invalid phoneId, rename
+    // or use SubscriptionManager.INVALID_SUB_ID
+    public static final int INVALID_SUBSCRIPTION = -1;
+
     public static final int RIL_CARD_MAX_APPS    = 8;
 
     public static final int DEFAULT_CARD_INDEX   = 0;
@@ -152,26 +183,23 @@ public class PhoneConstants {
 
     // FIXME: This is used to pass a subId via intents, we need to look at its usage, which is
     // FIXME: extensive, and see if this should be an array of all active subId's or ...?
+
     public static final String SUBSCRIPTION_KEY  = "subscription";
 
     public static final String SUB_SETTING  = "subSettings";
 
-    public static final int SUCCESS = 0;
-    public static final int FAILURE = 1;
-
     public static final int SUB1 = 0;
     public static final int SUB2 = 1;
     public static final int SUB3 = 2;
+
+    public static final int EVENT_SUBSCRIPTION_ACTIVATED   = 500;
+    public static final int EVENT_SUBSCRIPTION_DEACTIVATED = 501;
 
     // TODO: Remove these constants and use an int instead.
     public static final int SIM_ID_1 = 0;
     public static final int SIM_ID_2 = 1;
     public static final int SIM_ID_3 = 2;
     public static final int SIM_ID_4 = 3;
-
-    public static final int PHONE_ID1 = 0;
-    public static final int PHONE_ID2 = 1;
-    public static final int PHONE_ID3 = 2;
 
     // ICC SIM Application Types
     // TODO: Replace the IccCardApplicationStatus.AppType enums with these constants
@@ -185,19 +213,33 @@ public class PhoneConstants {
     public enum CardUnavailableReason {
         REASON_CARD_REMOVED,
         REASON_RADIO_UNAVAILABLE,
-        REASON_SIM_REFRESH_RESET,
-        REASON_APM_SIM_POWER_DOWN
+        REASON_SIM_REFRESH_RESET
     };
 
     // Initial MTU value.
     public static final int UNSET_MTU = 0;
+    // Added by M begin
+    // MVNO-API START
+    public static final String MVNO_TYPE_NONE = "";
+    public static final String MVNO_TYPE_SPN = "spn";
+    public static final String MVNO_TYPE_IMSI = "imsi";
+    public static final String MVNO_TYPE_PNN = "pnn";
+    public static final String MVNO_TYPE_GID = "gid";
+    // MVNO-API END
+    // Added by M end
 
-    /**
-     * Values for the adb property "persist.radio.ims.audio.output"
-     */
-    public static final int IMS_AUDIO_OUTPUT_ENABLE_SPEAKER = 0;
-    public static final int IMS_AUDIO_OUTPUT_DISABLE_SPEAKER = 1;
-    public static final int IMS_AUDIO_OUTPUT_DEFAULT = IMS_AUDIO_OUTPUT_ENABLE_SPEAKER;
-    //FIXME maybe this shouldn't be here - sprout only
-    public static final int CAPABILITY_3G   = 1;
+    //[ALPS01577029]-START
+    // The TELEPHONY_MISC_FEATURE_CONFIG for tester to switch some features via engineering mode
+    //Bit 1: To support auto switch rat mode to 2G only for 3M TDD csfb project when we are not in china
+    public static final int MISC_FEATURE_CONFIG_MASK_AUTO_SWITCH_RAT = 0x01;
+    //[ALPS01577029]-END
+
+    //VOLTE IMS STATE
+    public static final int IMS_STATE_DISABLED = 0;
+
+    public static final int IMS_STATE_ENABLE = 1;
+
+    public static final int IMS_STATE_ENABLING = 2;
+
+    public static final int IMS_STATE_DISABLING = 3;
 }

@@ -42,6 +42,15 @@ import android.telephony.SubscriptionManager;
 
 import java.util.Locale;
 
+/* M: call control part start */
+/*
+import com.mediatek.common.MPlugin;
+import com.mediatek.common.telephony.ICallerInfoExt;
+import com.mediatek.geocoding.GeoCodingQuery;
+import static com.android.internal.telephony.PhoneConstants.PHONE_TYPE_CDMA;
+import android.os.SystemProperties;
+*/
+/* M: call control part end */
 
 /**
  * Looks up caller information for the given phone number.
@@ -114,6 +123,11 @@ public class CallerInfo {
     public Uri contactRingtoneUri;
     public boolean shouldSendToVoicemail;
 
+    /* M: call control part start */
+    // Add a member data for phone application to store additional data.
+    public Object additionalInfo;
+    /* M: call control part end */
+
     /**
      * Drawable representing the caller image.  This is essentially
      * a cache for the image data tied into the connection /
@@ -163,7 +177,14 @@ public class CallerInfo {
      * @return the CallerInfo which contains the caller id for the given
      * number. The returned CallerInfo is null if no number is supplied.
      */
+    /* M: call control part start */
+    //According to CallerInfoExt implementation on L, subId is requested for USIM AAS feature.
     public static CallerInfo getCallerInfo(Context context, Uri contactRef, Cursor cursor) {
+        int subId = SubscriptionManager.getDefaultSubId();
+    	return getCallerInfo(context, contactRef, cursor, subId);
+    }
+
+    public static CallerInfo getCallerInfo(Context context, Uri contactRef, Cursor cursor, int subId) {
         CallerInfo info = new CallerInfo();
         info.photoResource = 0;
         info.phoneLabel = null;
@@ -208,9 +229,24 @@ public class CallerInfo {
                     if (typeColumnIndex != -1) {
                         info.numberType = cursor.getInt(typeColumnIndex);
                         info.numberLabel = cursor.getString(columnIndex);
-                        info.phoneLabel = Phone.getDisplayLabel(context,
-                                info.numberType, info.numberLabel)
-                                .toString();
+                        /* M: call control part start */
+                        //info.phoneLabel = Phone.getDisplayLabel(context,
+                        //        info.numberType, info.numberLabel)
+                        //        .toString();
+						/*
+                        try {
+                            ICallerInfoExt iCallerInfoExt = MPlugin.createInstance(ICallerInfoExt.class.getName(), context);
+                            if (iCallerInfoExt != null) {
+                                info.phoneLabel = iCallerInfoExt.getTypeLabel(context,
+                                    info.numberType, info.numberLabel, cursor, subId).toString();
+                            } else {
+                                Rlog.e(TAG, "Fail to initialize ICallerInfoExt");
+                            }
+                        } catch (Exception e) {
+                            Rlog.e(TAG, "Fail to create plug-in");
+                            e.printStackTrace();
+                        }
+                        /* M: call control part end */
                     }
                 }
 
@@ -262,6 +298,16 @@ public class CallerInfo {
                         ((cursor.getInt(columnIndex)) == 1);
                 info.contactExists = true;
             }
+            /* M: call control part start */
+            /// [ALPS00351053] Failed to automatically reject for specific contact number.
+            while ((info.shouldSendToVoicemail == false) && (cursor.moveToNext() == true))
+            {
+               int columnIndex = cursor.getColumnIndex(PhoneLookup.SEND_TO_VOICEMAIL);
+               info.shouldSendToVoicemail = (columnIndex != -1) &&
+                                            ((cursor.getInt(columnIndex)) == 1);
+            }
+            /* M: call control part end */
+
             cursor.close();
             cursor = null;
         }
@@ -272,6 +318,7 @@ public class CallerInfo {
 
         return info;
     }
+    /* M: call control part end */
 
     /**
      * getCallerInfo given a URI, look up in the call-log database
@@ -322,14 +369,25 @@ public class CallerInfo {
             return null;
         }
 
+        Rlog.d(TAG, "number " + number + " subId: " + subId);
+
         // Change the callerInfo number ONLY if it is an emergency number
         // or if it is the voicemail number.  If it is either, take a
         // shortcut and skip the query.
-        if (PhoneNumberUtils.isLocalEmergencyNumber(context, number)) {
-            return new CallerInfo().markAsEmergency(context);
+        /* M: call control part start */
+		/*
+        int phoneType = TelephonyManager.getDefault().getCurrentPhoneType(subId);
+        if (PhoneNumberUtils.isEmergencyNumberExt(number, phoneType)) {
+            CallerInfo info = new CallerInfo().markAsEmergency(context);
+            if (phoneType == PHONE_TYPE_CDMA) {
+                info.name = info.phoneNumber;
+                info.phoneNumber = number;
+            }
+            return info;
         } else if (PhoneNumberUtils.isVoiceMailNumber(subId, number)) {
-            return new CallerInfo().markAsVoiceMail();
+            return new CallerInfo().markAsVoiceMail(subId);
         }
+        /* M: call control part end */
 
         Uri contactUri = Uri.withAppendedPath(PhoneLookup.ENTERPRISE_CONTENT_FILTER_URI,
                 Uri.encode(number));
@@ -556,6 +614,19 @@ public class CallerInfo {
         if (TextUtils.isEmpty(number)) {
             return null;
         }
+
+        /* M: call control part start */
+        // [ALPS00286530]Query Geocoding description, mtk04070, 20120518.
+		/*
+        if (SystemProperties.get("ro.mtk_phone_number_geo").equals("1")) {
+            GeoCodingQuery geoCodingQuery = GeoCodingQuery.getInstance(context);
+            String cityName = geoCodingQuery.queryByNumber(number);
+            Rlog.v(TAG, "[GeoCodingQuery] cityName = " + cityName);
+            if ((cityName != null) && (!cityName.equals(""))) {
+                return cityName;
+            }
+        }
+        /* M: call control part end */
 
         PhoneNumberUtil util = PhoneNumberUtil.getInstance();
         PhoneNumberOfflineGeocoder geocoder = PhoneNumberOfflineGeocoder.getInstance();

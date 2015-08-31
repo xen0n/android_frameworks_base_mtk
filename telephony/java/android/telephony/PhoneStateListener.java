@@ -20,7 +20,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
-import android.telephony.SubscriptionManager;
 import android.telephony.CellLocation;
 import android.telephony.CellInfo;
 import android.telephony.VoLteServiceState;
@@ -32,7 +31,6 @@ import android.telephony.PreciseCallState;
 import android.telephony.PreciseDataConnectionState;
 
 import com.android.internal.telephony.IPhoneStateListener;
-import com.android.internal.telephony.PhoneConstants;
 
 import java.util.List;
 
@@ -227,7 +225,7 @@ public class PhoneStateListener {
      * @hide
      */
     /** @hide */
-    protected int mSubId = SubscriptionManager.INVALID_SUBSCRIPTION_ID;
+    protected int mSubId = 0;
 
     private final Handler mHandler;
 
@@ -237,7 +235,7 @@ public class PhoneStateListener {
      * own non-null looper use PhoneStateListener(Looper looper) below.
      */
     public PhoneStateListener() {
-        this(SubscriptionManager.DEFAULT_SUBSCRIPTION_ID, Looper.myLooper());
+        this(SubscriptionManager.DEFAULT_SUB_ID, Looper.myLooper());
     }
 
     /**
@@ -246,7 +244,7 @@ public class PhoneStateListener {
      * @hide
      */
     public PhoneStateListener(Looper looper) {
-        this(SubscriptionManager.DEFAULT_SUBSCRIPTION_ID, looper);
+        this(SubscriptionManager.DEFAULT_SUB_ID, looper);
     }
 
     /**

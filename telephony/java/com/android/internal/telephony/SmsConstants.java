@@ -15,6 +15,10 @@
  */
 package com.android.internal.telephony;
 
+// MTK-START
+import android.os.SystemProperties;
+// MTK-END
+
 /**
  * SMS Constants and must be the same as the corresponding
  * deprecated version in SmsMessage.
@@ -78,4 +82,33 @@ public class SmsConstants {
      * @hide pending API council approval
      */
     public static final String FORMAT_3GPP2 = "3gpp2";
+
+    // MTK-START
+    /**
+     * Indicates isPrimary for ETWS..
+     * @hide pending API council approval
+     */
+    public static final String IS_EMERGENCY_CB_PRIMARY = "isPrimary";
+
+    private static final boolean IS_PRIVACY_PROTECTION_LOCK_SUPPORT =
+            SystemProperties.get("ro.mtk_privacy_protection_lock").equals("1");
+
+    private static final boolean IS_WAPPUSH_SUPPORT =
+            SystemProperties.get("ro.mtk_wappush_support").equals("1");
+
+    private static final boolean IS_EVDO_DT_SUPPORT =
+            SystemProperties.get("ro.evdo_dt_via_support").equals("1");
+
+    public static boolean isPrivacyLockSupport() {
+        return IS_PRIVACY_PROTECTION_LOCK_SUPPORT;
+    }
+
+    public static boolean isWapPushSupport() {
+        return IS_WAPPUSH_SUPPORT;
+    }
+
+    public static boolean isEvdoDtSupport() {
+        return IS_EVDO_DT_SUPPORT;
+    }
+    // MTK-END
 }

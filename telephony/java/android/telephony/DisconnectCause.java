@@ -160,96 +160,189 @@ public class DisconnectCause {
      */
     public static final int OUTGOING_CANCELED = 44;
 
+    /* M: call control part start */
+    /// M: [ALPS00093395]Add more call failed causes. @{
     /**
-     * Stk Call Control modified DIAL request to USSD request.
-     * {@hide}
+     * @hide
      */
-    public static final int DIAL_MODIFIED_TO_USSD          = 45;
+    public static final int MTK_DISCONNECTED_CAUSE_BASE    = OUTGOING_CANCELED;
+    /** no route to destination
+     * @hide
+     */
+    public static final int NO_ROUTE_TO_DESTINATION        = MTK_DISCONNECTED_CAUSE_BASE + 1;
+    /** no user responding
+     * @hide
+     */
+    public static final int NO_USER_RESPONDING             = MTK_DISCONNECTED_CAUSE_BASE + 2;
+    /** user alerting, no answer
+     * @hide
+     */
+    public static final int USER_ALERTING_NO_ANSWER        = MTK_DISCONNECTED_CAUSE_BASE + 3;
+    /** call rejected
+     * @hide
+     */
+    public static final int CALL_REJECTED                  = MTK_DISCONNECTED_CAUSE_BASE + 4;
+    /** invalid number format
+     * @hide
+     */
+    public static final int INVALID_NUMBER_FORMAT          = MTK_DISCONNECTED_CAUSE_BASE + 5;
+    /** facility rejected
+     * @hide
+     */
+    public static final int FACILITY_REJECTED              = MTK_DISCONNECTED_CAUSE_BASE + 6;
+    /** normal, unspecified
+     * @hide
+     */
+    public static final int NORMAL_UNSPECIFIED             = MTK_DISCONNECTED_CAUSE_BASE + 7;
+    /** no circuit/channel available
+     * @hide
+     */
+    public static final int NO_CIRCUIT_AVAIL               = MTK_DISCONNECTED_CAUSE_BASE + 8;
+    /** switching equipment congestion
+     * @hide
+     */
+    public static final int SWITCHING_CONGESTION           = MTK_DISCONNECTED_CAUSE_BASE + 9;
+    /** resource unavailable, unspecified
+     * @hide
+     */
+    public static final int RESOURCE_UNAVAILABLE           = MTK_DISCONNECTED_CAUSE_BASE + 10;
+    /** bearer capability not authorized
+     * @hide
+     */
+    public static final int BEARER_NOT_AUTHORIZED          = MTK_DISCONNECTED_CAUSE_BASE + 11;
+    /** bearer capability not presently available
+     * @hide
+     */
+    public static final int BEARER_NOT_AVAIL               = MTK_DISCONNECTED_CAUSE_BASE + 12;
+    /** service or option not available, unspecified
+     * @hide
+     */
+    public static final int SERVICE_NOT_AVAILABLE          = MTK_DISCONNECTED_CAUSE_BASE + 13;
+    /** bearer service not implemented
+     * @hide
+     */
+    public static final int BEARER_NOT_IMPLEMENT           = MTK_DISCONNECTED_CAUSE_BASE + 14;
+    /** Requested facility not implemented
+     * @hide
+     */
+    public static final int FACILITY_NOT_IMPLEMENT         = MTK_DISCONNECTED_CAUSE_BASE + 15;
+    /** only restricted digital information bearer capability is available
+     * @hide
+     */
+    public static final int RESTRICTED_BEARER_AVAILABLE    = MTK_DISCONNECTED_CAUSE_BASE + 16;
+    /** service or option not implemented, unspecified
+     * @hide
+     */
+    public static final int OPTION_NOT_AVAILABLE           = MTK_DISCONNECTED_CAUSE_BASE + 17;
+    /** incompatible destination
+     * @hide
+     */
+    public static final int INCOMPATIBLE_DESTINATION       = MTK_DISCONNECTED_CAUSE_BASE + 18;
+    /** RR connection release
+     * @hide
+     */
+    public static final int CHANNEL_UNACCEPTABLE           = MTK_DISCONNECTED_CAUSE_BASE + 19;
     /**
-     * Stk Call Control modified DIAL request to SS request.
-     * {@hide}
+     * @hide
      */
-    public static final int DIAL_MODIFIED_TO_SS            = 46;
+    public static final int OPERATOR_DETERMINED_BARRING    = MTK_DISCONNECTED_CAUSE_BASE + 20;
     /**
-     * Stk Call Control modified DIAL request to DIAL with modified data.
-     * {@hide}
+     * @hide
      */
-    public static final int DIAL_MODIFIED_TO_DIAL          = 47;
+    public static final int PRE_EMPTION                    = MTK_DISCONNECTED_CAUSE_BASE + 21;
     /**
-     * Call was rejected due to number being blacklisted by user.
-     * {@@hide}
+     * @hide
      */
-    public static final int CALL_BLACKLISTED = 400;
+    public static final int NON_SELECTED_USER_CLEARING     = MTK_DISCONNECTED_CAUSE_BASE + 22;
+    /**
+     * @hide
+     */
+    public static final int DESTINATION_OUT_OF_ORDER       = MTK_DISCONNECTED_CAUSE_BASE + 23;
+    /**
+     * @hide
+     */
+    public static final int ACCESS_INFORMATION_DISCARDED   = MTK_DISCONNECTED_CAUSE_BASE + 24;
+    /**
+     * @hide
+     */
+    public static final int REQUESTED_FACILITY_NOT_SUBSCRIBED = MTK_DISCONNECTED_CAUSE_BASE + 25;
+    /**
+     * @hide
+     */
+    public static final int INCOMING_CALL_BARRED_WITHIN_CUG   = MTK_DISCONNECTED_CAUSE_BASE + 26;
+    /**
+     * @hide
+     */
+    public static final int INVALID_TRANSACTION_ID_VALUE   = MTK_DISCONNECTED_CAUSE_BASE + 27;
+    /**
+     * @hide
+     */
+    public static final int USER_NOT_MEMBER_OF_CUG         = MTK_DISCONNECTED_CAUSE_BASE + 28;
+    /**
+     * @hide
+     */
+    public static final int INVALID_TRANSIT_NETWORK_SELECTION = MTK_DISCONNECTED_CAUSE_BASE + 29;
+    /**
+     * @hide
+     */
+    public static final int SEMANTICALLY_INCORRECT_MESSAGE = MTK_DISCONNECTED_CAUSE_BASE + 30;
+    /**
+     * @hide
+     */
+    public static final int INVALID_MANDATORY_INFORMATION  = MTK_DISCONNECTED_CAUSE_BASE + 31;
+    /**
+     * @hide
+     */
+    public static final int MESSAGE_TYPE_NON_EXISTENT      = MTK_DISCONNECTED_CAUSE_BASE + 32;
+    /**
+     * @hide
+     */
+    public static final int MESSAGE_TYPE_NOT_COMPATIBLE_WITH_PROT_STATE = MTK_DISCONNECTED_CAUSE_BASE + 33;
+    /**
+     * @hide
+     */
+    public static final int IE_NON_EXISTENT_OR_NOT_IMPLEMENTED = MTK_DISCONNECTED_CAUSE_BASE + 34;
+    /**
+     * @hide
+     */
+    public static final int CONDITIONAL_IE_ERROR           = MTK_DISCONNECTED_CAUSE_BASE + 35;
+    /**
+     * @hide
+     */
+    public static final int MESSAGE_NOT_COMPATIBLE_WITH_PROTOCOL_STATE = MTK_DISCONNECTED_CAUSE_BASE + 36;
+    /**
+     * @hide
+     */
+    public static final int RECOVERY_ON_TIMER_EXPIRY       = MTK_DISCONNECTED_CAUSE_BASE + 37;
+    /**
+     * @hide
+     */
+    public static final int PROTOCOL_ERROR_UNSPECIFIED     = MTK_DISCONNECTED_CAUSE_BASE + 38;
+    /**
+     * @hide
+     */
+    public static final int INTERWORKING_UNSPECIFIED       = MTK_DISCONNECTED_CAUSE_BASE + 39;
+    /**
+     * @hide
+     */
+    public static final int CM_MM_RR_CONNECTION_RELEASE    = MTK_DISCONNECTED_CAUSE_BASE + 40;
+    /**
+     * @hide
+     */
+    public static final int OUTGOING_CANCELED_BY_SERVICE   = MTK_DISCONNECTED_CAUSE_BASE + 41;
+    /// @}
+    /* M: call control part end */
 
-    public static final int NO_CIRCUIT_AVAIL = 48;
-    public static final int NO_ROUTE_TO_DESTINAON = 49;
-    public static final int OPERATOR_DETERMINED_BARRING = 50;
-    public static final int CALL_FAIL_NO_USER_RESPONDING = 51;
-    public static final int CALL_FAIL_NO_ANSWER_FROM_USER = 52;
-    public static final int CALL_FAIL_DESTINATION_OUT_OF_ORDER = 53;
-    public static final int BEARER_CAPABILITY_NOT_AUTHORIZED = 54;
-    public static final int CHANNEL_UNACCEPTABLE = 55;
-    public static final int CALL_REJECTED = 56;
-    public static final int NUMBER_CHANGED = 57;
-    public static final int PREEMPTION = 58;
-    public static final int FACILITY_REJECTED = 59;
-    public static final int RESP_TO_STATUS_ENQUIRY = 60;
-    public static final int NORMAL_UNSPECIFIED = 61;
-    public static final int NETWORK_OUT_OF_ORDER = 62;
-    public static final int TEMPORARY_FAILURE = 63;
-    public static final int SWITCHING_EQUIPMENT_CONGESTION = 64;
-    public static final int ACCESS_INFORMATION_DISCARDED = 65;
-    public static final int REQUESTED_CIRCUIT_OR_CHANNEL_NOT_AVAILABLE = 66;
-    public static final int RESOURCES_UNAVAILABLE_OR_UNSPECIFIED = 67;
-    public static final int QOS_UNAVAILABLE = 68;
-    public static final int REQUESTED_FACILITY_NOT_SUBSCRIBED = 69;
-    public static final int INCOMING_CALLS_BARRED_WITHIN_CUG = 70;
-    public static final int BEARER_CAPABILITY_UNAVAILABLE = 71;
-    public static final int SERVICE_OPTION_NOT_AVAILABLE = 72;
-    public static final int BEARER_SERVICE_NOT_IMPLEMENTED = 73;
-    public static final int REQUESTED_FACILITY_NOT_IMPLEMENTED = 74;
-    public static final int ONLY_DIGITAL_INFORMATION_BEARER_AVAILABLE = 75;
-    public static final int SERVICE_OR_OPTION_NOT_IMPLEMENTED = 76;
-    public static final int INVALID_TRANSACTION_IDENTIFIER = 77;
-    public static final int USER_NOT_MEMBER_OF_CUG = 78;
-    public static final int INCOMPATIBLE_DESTINATION = 79;
-    public static final int INVALID_TRANSIT_NW_SELECTION = 80;
-    public static final int SEMANTICALLY_INCORRECT_MESSAGE = 81;
-    public static final int INVALID_MANDATORY_INFORMATION = 82;
-    public static final int MESSAGE_TYPE_NON_IMPLEMENTED = 83;
-    public static final int MESSAGE_TYPE_NOT_COMPATIBLE_WITH_PROTOCOL_STATE = 84;
-    public static final int INFORMATION_ELEMENT_NON_EXISTENT = 85;
-    public static final int CONDITIONAL_IE_ERROR = 86;
-    public static final int MESSAGE_NOT_COMPATIBLE_WITH_PROTOCOL_STATE = 87;
-    public static final int RECOVERY_ON_TIMER_EXPIRED = 88;
-    public static final int PROTOCOL_ERROR_UNSPECIFIED = 89;
-    public static final int INTERWORKING_UNSPECIFIED = 90;
-    /**
-     * The call, which was an IMS call, disconnected because it merged with another call.
-     */
-    public static final int IMS_MERGED_SUCCESSFULLY = 91;
-
-    /** EMERGENCY call failed with temporary fail cause */
-    public static final int EMERGENCY_TEMP_FAILURE         = 92;
-    /** EMERGENCY call failed with permanent fail cause */
-    public static final int EMERGENCY_PERM_FAILURE         = 93;
-
-    //*********************************************************************************************
-    // When adding a disconnect type:
-    // 1) Please assign the new type the next id value below.
-    // 2) Increment the next id value below to a new value.
-    // 3) Update MAXIMUM_VALID_VALUE to the new disconnect type.
-    // 4) Update toString() with the newly added disconnect type.
-    // 5) Update android.telecom.DisconnectCauseUtil with any mappings to a telecom.DisconnectCause.
-    //
-    // NextId: 92
-    //*********************************************************************************************
+    /// M: IMS feature. @{
+    public static final int IMS_EMERGENCY_REREG = 380;
+    /// @}
 
     /** Smallest valid value for call disconnect codes. */
     public static final int MINIMUM_VALID_VALUE = NOT_DISCONNECTED;
 
+    /* M : for SDK reason, we don't modify the MAX value and it is no use now so it is OK */
     /** Largest valid value for call disconnect codes. */
-    public static final int MAXIMUM_VALID_VALUE = IMS_MERGED_SUCCESSFULLY;
+    public static final int MAXIMUM_VALID_VALUE = OUTGOING_CANCELED;
 
     /** Private constructor to avoid class instantiation. */
     private DisconnectCause() {
@@ -341,22 +434,98 @@ public class DisconnectCause {
             return "CDMA_CALL_LOST";
         case EXITED_ECM:
             return "EXITED_ECM";
-        case DIAL_MODIFIED_TO_USSD:
-            return "DIAL_MODIFIED_TO_USSD";
-        case DIAL_MODIFIED_TO_SS:
-            return "DIAL_MODIFIED_TO_SS";
-        case DIAL_MODIFIED_TO_DIAL:
-            return "DIAL_MODIFIED_TO_DIAL";
         case ERROR_UNSPECIFIED:
             return "ERROR_UNSPECIFIED";
         case OUTGOING_FAILURE:
             return "OUTGOING_FAILURE";
         case OUTGOING_CANCELED:
             return "OUTGOING_CANCELED";
-        case IMS_MERGED_SUCCESSFULLY:
-            return "IMS_MERGED_SUCCESSFULLY";
-        case CALL_BLACKLISTED:
-            return "CALL_BLACKLISTED";
+        /* M: call control part start */
+        /// M: [ALPS00093395]Add more call failed causes. @{
+        case NO_ROUTE_TO_DESTINATION:
+            return "NO_ROUTE_TO_DESTINATION";
+        case NO_USER_RESPONDING:
+            return "NO_USER_RESPONDING";
+        case USER_ALERTING_NO_ANSWER:
+            return "USER_ALERTING_NO_ANSWER";
+        case CALL_REJECTED:
+            return "CALL_REJECTED";
+        case INVALID_NUMBER_FORMAT:
+            return "INVALID_NUMBER_FORMAT";
+        case FACILITY_REJECTED:
+            return "FACILITY_REJECTED";
+        case NORMAL_UNSPECIFIED:
+            return "NORMAL_UNSPECIFIED";
+        case NO_CIRCUIT_AVAIL:
+            return "NO_CIRCUIT_AVAIL";
+        case SWITCHING_CONGESTION:
+            return "SWITCHING_CONGESTION";
+        case RESOURCE_UNAVAILABLE:
+            return "RESOURCE_UNAVAILABLE";
+        case BEARER_NOT_AUTHORIZED:
+            return "BEARER_NOT_AUTHORIZED";
+        case BEARER_NOT_AVAIL:
+            return "BEARER_NOT_AVAIL";
+        case SERVICE_NOT_AVAILABLE:
+            return "SERVICE_NOT_AVAILABLE";
+        case BEARER_NOT_IMPLEMENT:
+            return "BEARER_NOT_IMPLEMENT";
+        case FACILITY_NOT_IMPLEMENT:
+            return "FACILITY_NOT_IMPLEMENT";
+        case RESTRICTED_BEARER_AVAILABLE:
+            return "RESTRICTED_BEARER_AVAILABLE";
+        case OPTION_NOT_AVAILABLE:
+            return "OPTION_NOT_AVAILABLE";
+        case INCOMPATIBLE_DESTINATION:
+            return "INCOMPATIBLE_DESTINATION";
+        case CHANNEL_UNACCEPTABLE:
+            return "CHANNEL_UNACCEPTABLE";
+        case OPERATOR_DETERMINED_BARRING:
+            return "OPERATOR_DETERMINED_BARRING";
+        case PRE_EMPTION:
+            return "PRE_EMPTION";
+        case NON_SELECTED_USER_CLEARING:
+            return "NON_SELECTED_USER_CLEARING";
+        case DESTINATION_OUT_OF_ORDER:
+            return "DESTINATION_OUT_OF_ORDER";
+        case ACCESS_INFORMATION_DISCARDED:
+            return "ACCESS_INFORMATION_DISCARDED";
+        case REQUESTED_FACILITY_NOT_SUBSCRIBED:
+            return "REQUESTED_FACILITY_NOT_SUBSCRIBED";
+        case INCOMING_CALL_BARRED_WITHIN_CUG:
+            return "INCOMING_CALL_BARRED_WITHIN_CUG";
+        case INVALID_TRANSACTION_ID_VALUE:
+            return "INVALID_TRANSACTION_ID_VALUE";
+        case USER_NOT_MEMBER_OF_CUG:
+            return "USER_NOT_MEMBER_OF_CUG";
+        case INVALID_TRANSIT_NETWORK_SELECTION:
+            return "INVALID_TRANSIT_NETWORK_SELECTION";
+        case SEMANTICALLY_INCORRECT_MESSAGE:
+            return "SEMANTICALLY_INCORRECT_MESSAGE";
+        case INVALID_MANDATORY_INFORMATION:
+            return "INVALID_MANDATORY_INFORMATION";
+        case MESSAGE_TYPE_NON_EXISTENT:
+            return "MESSAGE_TYPE_NON_EXISTENT";
+        case MESSAGE_TYPE_NOT_COMPATIBLE_WITH_PROT_STATE:
+            return "MESSAGE_TYPE_NOT_COMPATIBLE_WITH_PROT_STATE";
+        case IE_NON_EXISTENT_OR_NOT_IMPLEMENTED:
+            return "IE_NON_EXISTENT_OR_NOT_IMPLEMENTED";
+        case CONDITIONAL_IE_ERROR:
+            return "CONDITIONAL_IE_ERROR";
+        case MESSAGE_NOT_COMPATIBLE_WITH_PROTOCOL_STATE:
+            return "MESSAGE_NOT_COMPATIBLE_WITH_PROTOCOL_STATE";
+        case RECOVERY_ON_TIMER_EXPIRY:
+            return "RECOVERY_ON_TIMER_EXPIRY";
+        case PROTOCOL_ERROR_UNSPECIFIED:
+            return "PROTOCOL_ERROR_UNSPECIFIED";
+        case INTERWORKING_UNSPECIFIED:
+            return "INTERWORKING_UNSPECIFIED";
+        case CM_MM_RR_CONNECTION_RELEASE:
+            return "CM_MM_RR_CONNECTION_RELEASE";
+        case OUTGOING_CANCELED_BY_SERVICE:
+            return "OUTGOING_CANCELED_BY_SERVICE";
+        /// @}
+        /* M: call control part end */
         default:
             return "INVALID: " + cause;
         }

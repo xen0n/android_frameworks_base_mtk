@@ -36,6 +36,12 @@ import android.telephony.Rlog;
 import android.telephony.SubscriptionManager;
 import android.util.Log;
 
+/* M: call control part start */
+import static com.android.internal.telephony.PhoneConstants.PHONE_TYPE_CDMA;
+import android.telephony.TelephonyManager;
+import android.os.SystemProperties;
+/* M: call control part end */
+
 /**
  * Helper class to make it easier to run asynchronous caller-id lookup queries.
  * @see CallerInfo
@@ -280,10 +286,21 @@ public class CallerInfoAsyncQuery {
                     // Note we're setting the phone number here (refer to javadoc
                     // comments at the top of CallerInfo class).
                     mCallerInfo = new CallerInfo().markAsEmergency(mContext);
+                    /* M: call control part start */
+                    int phoneType = TelephonyManager.getDefault().getCurrentPhoneType(cw.subId);
+                    if (phoneType == PHONE_TYPE_CDMA) {
+                        mCallerInfo.name = mCallerInfo.phoneNumber;
+                        mCallerInfo.phoneNumber = cw.number;
+                    }
+                    /* M: call control part end */
                 } else if (cw.event == EVENT_VOICEMAIL_NUMBER) {
                     mCallerInfo = new CallerInfo().markAsVoiceMail(cw.subId);
                 } else {
-                    mCallerInfo = CallerInfo.getCallerInfo(mContext, mQueryUri, cursor);
+                    /* M: call control part start */
+                    //According to CallerInfoExt implementation on L, subId is requested for USIM AAS feature.
+                    //mCallerInfo = CallerInfo.getCallerInfo(mContext, mQueryUri, cursor);
+                    mCallerInfo = CallerInfo.getCallerInfo(mContext, mQueryUri, cursor, cw.subId);
+                    /* M: call control part end */
                     if (DBG) Rlog.d(LOG_TAG, "==> Got mCallerInfo: " + mCallerInfo);
 
                     CallerInfo newCallerInfo = CallerInfo.doSecondaryLookupIfNecessary(
@@ -307,7 +324,8 @@ public class CallerInfoAsyncQuery {
                         // new parameter to CallerInfoAsyncQuery.startQuery() to force
                         // the geoDescription field to be populated.)
 
-                        if (TextUtils.isEmpty(mCallerInfo.name)) {
+                        if (TextUtils.isEmpty(mCallerInfo.name) ||
+                            (SystemProperties.get("ro.mtk_phone_number_geo").equals("1"))) {
                             // Actually when no contacts match the incoming phone number,
                             // the CallerInfo object is totally blank here (i.e. no name
                             // *or* phoneNumber).  So we need to pass in cw.number as
@@ -412,6 +430,14 @@ public class CallerInfoAsyncQuery {
             Rlog.d(LOG_TAG, "- cookie: " + cookie);
         }
 
+        /* M: call control part start */
+        /* To solve ALPS01273023, simId = -1 --> for SIP call */
+        long originalSubId = subId;
+        if (subId == -1) {
+            subId = 0;
+        }
+        /* M: call control part end */
+
         // Construct the URI object and query params, and start the query.
 
         final Uri contactRef = PhoneLookup.ENTERPRISE_CONTENT_FILTER_URI.buildUpon()
@@ -434,14 +460,17 @@ public class CallerInfoAsyncQuery {
         cw.number = number;
         cw.subId = subId;
 
+        /* M: call control part start */
         // check to see if these are recognized numbers, and use shortcuts if we can.
-        if (PhoneNumberUtils.isLocalEmergencyNumber(context, number)) {
+        int phoneType = TelephonyManager.getDefault().getCurrentPhoneType(cw.subId);
+        if (PhoneNumberUtils.isEmergencyNumberExt(number, phoneType)) {
             cw.event = EVENT_EMERGENCY_NUMBER;
-        } else if (PhoneNumberUtils.isVoiceMailNumber(subId, number)) {
+        } else if ((originalSubId != -1) && (PhoneNumberUtils.isVoiceMailNumber(subId, number))) {
             cw.event = EVENT_VOICEMAIL_NUMBER;
         } else {
             cw.event = EVENT_NEW_QUERY;
         }
+        /* M: call control part end */
 
         c.mHandler.startQuery(token,
                               cw,  // cookie

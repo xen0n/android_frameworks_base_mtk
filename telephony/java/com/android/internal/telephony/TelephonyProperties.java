@@ -35,6 +35,11 @@ public interface TelephonyProperties
      */
     static final String PROPERTY_BASEBAND_VERSION = "gsm.version.baseband";
 
+    /**
+    * Indicate Modem version for stack 2.
+    */
+    static final String PROPERTY_BASEBAND_VERSION_2 = "gsm.version.baseband.2";
+
     /** Radio Interface Layer (RIL) library implementation. */
     static final String PROPERTY_RIL_IMPL = "gsm.version.ril-impl";
 
@@ -45,6 +50,12 @@ public interface TelephonyProperties
      *  CDMA networks.
      */
     static final String PROPERTY_OPERATOR_ALPHA = "gsm.operator.alpha";
+    //[ALPS01804936]-start:fix JE when change system language to "Burmese"
+    static final String PROPERTY_OPERATOR_ALPHA_2 = "gsm.operator.alpha.2";
+    static final String PROPERTY_OPERATOR_ALPHA_3 = "gsm.operator.alpha.3";
+    static final String PROPERTY_OPERATOR_ALPHA_4 = "gsm.operator.alpha.4";
+    //[ALPS01804936]-end
+
     //TODO: most of these properties are generic, substitute gsm. with phone. bug 1856959
 
     /** Numeric name (MCC+MNC) of current registered operator.<p>
@@ -98,7 +109,7 @@ public interface TelephonyProperties
     //****** SIM Card
     /**
      * One of <code>"UNKNOWN"</code> <code>"ABSENT"</code> <code>"PIN_REQUIRED"</code>
-     * <code>"PUK_REQUIRED"</code> <code>"PERSO_LOCKED"</code> or <code>"READY"</code>
+     * <code>"PUK_REQUIRED"</code> <code>"NETWORK_LOCKED"</code> or <code>"READY"</code>
      */
     static String PROPERTY_SIM_STATE = "gsm.sim.state";
 
@@ -107,18 +118,6 @@ public interface TelephonyProperties
      *  Availability: SIM state must be "READY"
      */
     static String PROPERTY_ICC_OPERATOR_NUMERIC = "gsm.sim.operator.numeric";
-
-    /** The MCC+MNC (mobile country code+mobile network code) of the
-     *  provider of the SIM to be used for APNs lookup. 5 or 6 decimal digits.
-     *  Availability: SIM state must be "READY"
-     */
-    static String PROPERTY_APN_SIM_OPERATOR_NUMERIC = "gsm.apn.sim.operator.numeric";
-
-    /** The MCC+MNC (mobile country code+mobile network code) of the
-     *  provider of the CDMA RUIM/CSIM to be used for APNs lookup. 5 or 6 decimal digits.
-     *  Availability: RUIM state must be "READY"
-     */
-    static String PROPERTY_APN_RUIM_OPERATOR_NUMERIC = "net.cdma.ruim.operator.numeric";
 
     /** PROPERTY_ICC_OPERATOR_ALPHA is also known as the SPN, or Service Provider Name.
      *  Availability: SIM state must be "READY"
@@ -147,11 +146,6 @@ public interface TelephonyProperties
      * Defines the schema for the carrier specified OTASP number
      */
     static final String PROPERTY_OTASP_NUM_SCHEMA = "ro.cdma.otaspnumschema";
-
-    /**
-     * Defines it is an OMH card or not.
-     */
-    static final String PROPERTY_RUIM_OMH_CARD = "ril.cdma.omhcard";
 
     /**
      * Disable all calls including Emergency call when it set to true.
@@ -210,7 +204,7 @@ public interface TelephonyProperties
      */
     static final String PROPERTY_IGNORE_NITZ = "telephony.test.ignore.nitz";
 
-    /**
+     /**
      * Property to set multi sim feature.
      * Type:  String(dsds, dsda)
      */
@@ -231,21 +225,36 @@ public interface TelephonyProperties
      * Set to the sim count.
      */
     static final String PROPERTY_SIM_COUNT = "ro.telephony.sim.count";
-
-    static final String EXTRAS_IS_CONFERENCE_URI = "isConferenceUri";
-
-    static final String EXTRA_DIAL_CONFERENCE_URI =
-            "org.codeaurora.extra.DIAL_CONFERENCE_URI";
-    static final String ADD_PARTICIPANT_KEY = "add_participant";
-
-    static final String EXTRA_SKIP_SCHEMA_PARSING =
-            "org.codeaurora.extra.SKIP_SCHEMA_PARSING";
+    // Added by M begin
+    /** The IMSI of the SIM
+     *  Availability: SIM state must be "READY"
+     */
+    static String PROPERTY_ICC_OPERATOR_IMSI   = "gsm.sim.operator.imsi";
 
     /**
-     * Controls audio route for VT calls.
-     * 0 - Use the default audio routing strategy.
-     * 1 - Disable the speaker. Route the audio to Headset or Bluetooth
-     *     or Earpiece, based on the default audio routing strategy.
+    * Indicate if chaneing to SIM locale is processing
+    */
+    static final String PROPERTY_SIM_LOCALE_SETTINGS = "gsm.sim.locale.waiting";
+
+    /** PROPERTY_ICC_OPERATOR_DEFAULT_NAME is the operator name for plmn which origins the SIM.
+     *  Availablity: SIM state must be "READY"
      */
-    static final String PROPERTY_IMS_AUDIO_OUTPUT = "persist.radio.ims.audio.output";
+    static String PROPERTY_ICC_OPERATOR_DEFAULT_NAME = "gsm.sim.operator.default-name";
+    // Added by M end
+
+    static final String PROPERTY_WORLD_PHONE = "ro.mtk_world_phone";
+    static final String PROPERTY_ACTIVE_MD = "ril.active.md";
+
+ /**
+    * Indicate the highest radio access capability(ex: UMTS,LTE,etc.) of modem
+    */
+    static String PROPERTY_BASEBAND_CAPABILITY = "gsm.baseband.capability";
+    static String PROPERTY_BASEBAND_CAPABILITY_MD2 = "gsm.baseband.capability.md2";
+
+ /**
+    * NITZ operator long name,short name, numeric (if ever received from MM information)
+    */
+    static String PROPERTY_NITZ_OPER_CODE = "persist.radio.nitz_oper_code";
+    static String PROPERTY_NITZ_OPER_LNAME = "persist.radio.nitz_oper_lname";
+    static String PROPERTY_NITZ_OPER_SNAME = "persist.radio.nitz_oper_sname";
 }

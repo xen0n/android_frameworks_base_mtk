@@ -1,8 +1,5 @@
 /*
  * Copyright (C) 2012 The Android Open Source Project
- * Copyright (c) 2012-2014 The Linux Foundation. All rights reserved.
- *
- * Not a Contribution.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -103,8 +100,34 @@ public class DctConstants {
     public static final int CMD_NET_STAT_POLL = BASE + 40;
     public static final int EVENT_DATA_RAT_CHANGED = BASE + 41;
     public static final int CMD_CLEAR_PROVISIONING_SPINNER = BASE + 42;
-    public static final int EVENT_MODEM_DATA_PROFILE_READY = BASE + 43;
-    public static final int EVENT_GET_WWAN_IWLAN_COEXISTENCE_DONE = BASE + 44;
+
+    /** M: start */
+    public static final int MTK_BASE = BASE + 500;
+    public static final int EVENT_DATA_ROAMING_CHANGED = MTK_BASE + 1;
+    public static final int EVENT_INIT_EMERGENCY_APN_SETTINGS = MTK_BASE + 2;
+    public static final int EVENT_APN_CHANGED_DONE = MTK_BASE + 3;
+    public static final int EVENT_SETUP_DATA_WHEN_LOADED = MTK_BASE + 4;
+    public static final int EVENT_VOICE_CALL_STARTED_PEER = MTK_BASE + 5;
+    public static final int EVENT_VOICE_CALL_ENDED_PEER = MTK_BASE + 6;
+    public static final int EVENT_FDN_CHANGED = MTK_BASE + 7;
+    //VoLTE
+    public static final int EVENT_ENABLE_DEDICATE_BEARER = MTK_BASE + 11;
+    public static final int EVENT_DISABLE_DEDICATE_BEARER = MTK_BASE + 12;
+    public static final int EVENT_MODIFY_DEDICATE_BEARER = MTK_BASE + 13;
+    public static final int EVENT_DEDICATE_DATA_SETUP_COMPLETE = MTK_BASE + 14;
+    public static final int EVENT_DEDICATE_DATA_DEACTIVATE_COMPLETE = MTK_BASE + 15;
+    public static final int EVENT_DEDICATE_BEARER_MODIFIED_COMPLETE = MTK_BASE + 16;
+    public static final int EVENT_DEDICATE_BEARER_ACTIVATED_BY_NETWORK = MTK_BASE + 17;
+    public static final int EVENT_DEDICATE_BEARER_MODIFIED_BY_NETWORK = MTK_BASE + 18;
+    public static final int EVENT_DEDICATE_BEARER_DEACTIVATED_BY_NETWORK = MTK_BASE + 19;
+    public static final int EVENT_UPDATE_CONCATENATED_BEARER_COMPLETED = MTK_BASE + 20;
+    public static final int EVENT_PCSCF_DISCOVERY = MTK_BASE + 21;
+    public static final int EVENT_CLEAR_DATA_BEARER = MTK_BASE + 22;
+    public static final int EVENT_ABORT_DEDICATE_BEARER_ENABLE = MTK_BASE + 23;
+    public static final int EVENT_DEDICATE_BEARER_ABORT_COMPLETE = MTK_BASE + 24;
+    /* M: end */
+    // M: CC33 LTE.
+    public static final int EVENT_REMOVE_RESTRICT_EUTRAN = MTK_BASE + 25;
 
     /***** Constants *****/
 
@@ -119,9 +142,17 @@ public class DctConstants {
     public static final int APN_CBS_ID = 7;
     public static final int APN_IA_ID = 8;
     public static final int APN_EMERGENCY_ID = 9;
-    public static final int APN_NUM_TYPES = 10;
 
-    public static final int INVALID = -1;
+    /** M: start */
+    public static final int APN_DM_ID = 10;
+    public static final int APN_WAP_ID = 11;
+    public static final int APN_NET_ID = 12;
+    public static final int APN_CMMAIL_ID = 13;
+    public static final int APN_RCSE_ID = 14;
+    /** M: end */
+
+    public static final int APN_NUM_TYPES = APN_RCSE_ID + 1;
+
     public static final int DISABLED = 0;
     public static final int ENABLED = 1;
 

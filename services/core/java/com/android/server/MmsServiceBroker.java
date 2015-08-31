@@ -269,6 +269,19 @@ public class MmsServiceBroker extends SystemService {
         }
 
         @Override
+        public void updateMmsSendStatus(int messageRef, byte[] pdu, int status)
+                throws RemoteException {
+            enforceCarrierPrivilege();
+            getServiceGuarded().updateMmsSendStatus(messageRef, pdu, status);
+        }
+
+        @Override
+        public void updateMmsDownloadStatus(int messageRef, int status) throws RemoteException {
+            enforceCarrierPrivilege();
+            getServiceGuarded().updateMmsDownloadStatus(messageRef, status);
+        }
+
+        @Override
         public Bundle getCarrierConfigValues(int subId) throws RemoteException {
             Slog.d(TAG, "getCarrierConfigValues() by " + getCallingPackageName());
             return getServiceGuarded().getCarrierConfigValues(subId);

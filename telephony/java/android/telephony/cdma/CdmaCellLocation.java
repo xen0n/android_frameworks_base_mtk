@@ -19,11 +19,15 @@ package android.telephony.cdma;
 import android.os.Bundle;
 import android.telephony.CellLocation;
 
+import android.util.Log;
+import com.android.internal.telephony.PhoneConstants;
+
 /**
  * Represents the cell location on a CDMA phone.
  */
 public class CdmaCellLocation extends CellLocation {
     private int mBaseStationId = -1;
+   static final String TAG = "CdmaCellLocation";
 
     /**
      * @hide
@@ -60,6 +64,7 @@ public class CdmaCellLocation extends CellLocation {
         this.mBaseStationLongitude = INVALID_LAT_LONG;
         this.mSystemId = -1;
         this.mNetworkId = -1;
+        mType = PhoneConstants.PHONE_TYPE_CDMA;
     }
 
     /**
@@ -71,6 +76,7 @@ public class CdmaCellLocation extends CellLocation {
         this.mBaseStationLongitude = bundle.getInt("baseStationLongitude", mBaseStationLongitude);
         this.mSystemId = bundle.getInt("systemId", mSystemId);
         this.mNetworkId = bundle.getInt("networkId", mNetworkId);
+        mType = PhoneConstants.PHONE_TYPE_CDMA;
     }
 
     /**
@@ -214,17 +220,27 @@ public class CdmaCellLocation extends CellLocation {
         bundleToFill.putInt("baseStationLongitude", this.mBaseStationLongitude);
         bundleToFill.putInt("systemId", this.mSystemId);
         bundleToFill.putInt("networkId", this.mNetworkId);
+        bundleToFill.putInt("type", mType);
+        Log.d(TAG, "fillInNotifierBundle:" + bundleToFill.toString());
     }
 
     /**
      * @hide
      */
     public boolean isEmpty() {
-        return (this.mBaseStationId == -1 &&
+        /// M: c2k modify, modify. @{
+        Log.d(TAG, "isEmpty:"
+                + " mBaseStationId = " + mBaseStationId
+                + ", mBaseStationLatitude = " + mBaseStationLatitude
+                + ", mBaseStationLongitude = " + mBaseStationLongitude
+                + ", mSystemId = " + mSystemId
+                + ", mNetworkId = " + mNetworkId);
+        return ((this.mBaseStationId == -1 || this.mBaseStationId == 0) &&
                 this.mBaseStationLatitude == INVALID_LAT_LONG &&
                 this.mBaseStationLongitude == INVALID_LAT_LONG &&
-                this.mSystemId == -1 &&
-                this.mNetworkId == -1);
+                (this.mSystemId == -1 || this.mSystemId == 0) &&
+                (this.mNetworkId == -1 || this.mNetworkId == 0));
+        /// @}
     }
 
     /**

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014 The Android Open Source Project
+ * Copyright (C) 2014 MediaTek Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,11 +14,6 @@
  * limitations under the License.
  */
 
-package com.android.internal.telephony;
+package android.telephony;
 
-import android.telephony.SubscriptionInfo;
-
-oneway interface ISubscriptionListener {
-    void onSubscriptionInfoChanged();
-}
-
+parcelable PhoneRatFamily;

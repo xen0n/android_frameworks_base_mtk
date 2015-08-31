@@ -162,8 +162,23 @@ public final class NetworkCapabilities implements Parcelable {
      */
     public static final int NET_CAPABILITY_VALIDATED      = 16;
 
+    /** M: start */
+    /** {@hide} */
+    public static final int NET_CAPABILITY_DM = 16;
+    /** {@hide} */
+    public static final int NET_CAPABILITY_WAP = 17;
+    /** {@hide} */
+    public static final int NET_CAPABILITY_NET = 18;
+    /** {@hide} */
+    public static final int NET_CAPABILITY_CMMAIL = 19;
+    /** {@hide} */
+    public static final int NET_CAPABILITY_TETHERING = 20;
+    /** {@hide} */
+    public static final int NET_CAPABILITY_RCSE = 21;
+    /** M: end */
+
     private static final int MIN_NET_CAPABILITY = NET_CAPABILITY_MMS;
-    private static final int MAX_NET_CAPABILITY = NET_CAPABILITY_VALIDATED;
+    private static final int MAX_NET_CAPABILITY = NET_CAPABILITY_RCSE;
 
     /**
      * Adds the given capability to this {@code NetworkCapability} instance.
@@ -604,6 +619,14 @@ public final class NetworkCapabilities implements Parcelable {
                 case NET_CAPABILITY_NOT_RESTRICTED: capabilities += "NOT_RESTRICTED"; break;
                 case NET_CAPABILITY_TRUSTED:        capabilities += "TRUSTED"; break;
                 case NET_CAPABILITY_NOT_VPN:        capabilities += "NOT_VPN"; break;
+                /** M: start */
+                case NET_CAPABILITY_DM:             capabilities += "DM"; break;
+                case NET_CAPABILITY_WAP:            capabilities += "WAP"; break;
+                case NET_CAPABILITY_NET:            capabilities += "NET"; break;
+                case NET_CAPABILITY_CMMAIL:         capabilities += "CMMAIL"; break;
+                case NET_CAPABILITY_TETHERING:      capabilities += "TETHERING"; break;
+                case NET_CAPABILITY_RCSE:           capabilities += "RCSE"; break;
+                /** M: end */
             }
             if (++i < types.length) capabilities += "&";
         }

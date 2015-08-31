@@ -19,6 +19,13 @@ package com.android.internal.telephony;
 import android.app.PendingIntent;
 import android.net.Uri;
 import com.android.internal.telephony.SmsRawData;
+// MTK-START
+import com.mediatek.internal.telephony.IccSmsStorageStatus;
+import android.telephony.SimSmsInsertStatus;
+import android.os.Bundle;
+import android.telephony.SmsParameters;
+import com.mediatek.internal.telephony.SmsCbConfigInfo;
+// MTK-END
 
 /** Interface for applications to access the ICC phone book.
  *
@@ -35,7 +42,6 @@ import com.android.internal.telephony.SmsRawData;
  */
 
 interface ISms {
-     void synthesizeMessages(String originatingAddress, String scAddress, in List<String> messages, long timestampMillis);
     /**
      * Retrieves all messages currently stored on ICC.
      *
@@ -61,8 +67,10 @@ interface ISms {
      * @return success or not
      *
      */
-     boolean updateMessageOnIccEf(String callingPkg, int messageIndex, int newStatus,
+    // MTK-START
+    boolean updateMessageOnIccEf(String callingPkg, int messageIndex, int newStatus,
             in byte[] pdu);
+    // MTK-END
 
     /**
      * Update the specified message on the ICC.
@@ -76,8 +84,10 @@ interface ISms {
      * @return success or not
      *
      */
-     boolean updateMessageOnIccEfForSubscriber(in int subId, String callingPkg,
-             int messageIndex, int newStatus, in byte[] pdu);
+    // MTK-START
+    boolean updateMessageOnIccEfForSubscriber(in int subId, String callingPkg,
+            int messageIndex, int newStatus, in byte[] pdu);
+    // MTK-END
 
     /**
      * Copy a raw SMS PDU to the ICC.
@@ -158,67 +168,6 @@ interface ISms {
             in PendingIntent deliveryIntent);
 
     /**
-     * Send a data SMS with orig port.
-     *
-     * @param destAddr the address to send the message to
-     * @param scAddr is the service center address or null to use
-     *  the current default SMSC
-     * @param destPort the port to deliver the message to
-     * @param origPort the port set by the sender
-     * @param data the body of the message to send
-     * @param sentIntent if not NULL this <code>PendingIntent</code> is
-     *  broadcast when the message is sucessfully sent, or failed.
-     *  The result code will be <code>Activity.RESULT_OK<code> for success,
-     *  or one of these errors:<br>
-     *  <code>RESULT_ERROR_GENERIC_FAILURE</code><br>
-     *  <code>RESULT_ERROR_RADIO_OFF</code><br>
-     *  <code>RESULT_ERROR_NULL_PDU</code><br>
-     *  For <code>RESULT_ERROR_GENERIC_FAILURE</code> the sentIntent may include
-     *  the extra "errorCode" containing a radio technology specific value,
-     *  generally only useful for troubleshooting.<br>
-     *  The per-application based SMS control checks sentIntent. If sentIntent
-     *  is NULL the caller will be checked against all unknown applicaitons,
-     *  which cause smaller number of SMS to be sent in checking period.
-     * @param deliveryIntent if not NULL this <code>PendingIntent</code> is
-     *  broadcast when the message is delivered to the recipient.  The
-     *  raw pdu of the status report is in the extended data ("pdu").
-     */
-    void sendDataWithOrigPort(String callingPkg, in String destAddr, in String scAddr,
-        in int destPort, in int origPort, in byte[] data, in PendingIntent sentIntent,
-        in PendingIntent deliveryIntent);
-
-    /**
-     * Send a data SMS with orig port.
-     *
-     * @param subId the subId id.
-     * @param destAddr the address to send the message to
-     * @param scAddr is the service center address or null to use
-     *  the current default SMSC
-     * @param destPort the port to deliver the message to
-     * @param origPort the port set by the sender
-     * @param data the body of the message to send
-     * @param sentIntent if not NULL this <code>PendingIntent</code> is
-     *  broadcast when the message is sucessfully sent, or failed.
-     *  The result code will be <code>Activity.RESULT_OK<code> for success,
-     *  or one of these errors:<br>
-     *  <code>RESULT_ERROR_GENERIC_FAILURE</code><br>
-     *  <code>RESULT_ERROR_RADIO_OFF</code><br>
-     *  <code>RESULT_ERROR_NULL_PDU</code><br>
-     *  For <code>RESULT_ERROR_GENERIC_FAILURE</code> the sentIntent may include
-     *  the extra "errorCode" containing a radio technology specific value,
-     *  generally only useful for troubleshooting.<br>
-     *  The per-application based SMS control checks sentIntent. If sentIntent
-     *  is NULL the caller will be checked against all unknown applicaitons,
-     *  which cause smaller number of SMS to be sent in checking period.
-     * @param deliveryIntent if not NULL this <code>PendingIntent</code> is
-     *  broadcast when the message is delivered to the recipient.  The
-     *  raw pdu of the status report is in the extended data ("pdu").
-     */
-    void sendDataWithOrigPortUsingSubscriber(int subId, String callingPkg, in String destAddr,
-        in String scAddr,in int destPort, in int origPort, in byte[] data,
-        in PendingIntent sentIntent, in PendingIntent deliveryIntent);
-
-    /**
      * Send an SMS.
      *
      * @param smsc the SMSC to send the message through, or NULL for the
@@ -273,53 +222,6 @@ interface ISms {
             in PendingIntent deliveryIntent);
 
     /**
-     * Send an SMS with options using Subscription Id.
-     *
-     * @param subId the subId on which the SMS has to be sent.
-     * @param destAddr the address to send the message to
-     * @param scAddr the SMSC to send the message through, or NULL for the
-     *  default SMSC
-     * @param text the body of the message to send
-     * @param sentIntent if not NULL this <code>PendingIntent</code> is
-     *  broadcast when the message is sucessfully sent, or failed.
-     *  The result code will be <code>Activity.RESULT_OK<code> for success,
-     *  or one of these errors:<br>
-     *  <code>RESULT_ERROR_GENERIC_FAILURE</code><br>
-     *  <code>RESULT_ERROR_RADIO_OFF</code><br>
-     *  <code>RESULT_ERROR_NULL_PDU</code><br>
-     *  For <code>RESULT_ERROR_GENERIC_FAILURE</code> the sentIntent may include
-     *  the extra "errorCode" containing a radio technology specific value,
-     *  generally only useful for troubleshooting.<br>
-     *  The per-application based SMS control checks sentIntent. If sentIntent
-     *  is NULL the caller will be checked against all unknown applications,
-     *  which cause smaller number of SMS to be sent in checking period.
-     * @param deliveryIntent if not NULL this <code>PendingIntent</code> is
-     *  broadcast when the message is delivered to the recipient.  The
-     *  raw pdu of the status report is in the extended data ("pdu").
-     * @param priority Priority level of the message
-     *  Refer specification See 3GPP2 C.S0015-B, v2.0, table 4.5.9-1
-     *  ---------------------------------
-     *  PRIORITY      | Level of Priority
-     *  ---------------------------------
-     *      '00'      |     Normal
-     *      '01'      |     Interactive
-     *      '10'      |     Urgent
-     *      '11'      |     Emergency
-     *  ----------------------------------
-     *  Any Other values included Negative considered as Invalid Priority Indicator of the message.
-     * @param isExpectMore is a boolean to indicate the sending message is multi segmented or not.
-     * @param validityPeriod Validity Period of the message in mins.
-     *  Refer specification 3GPP TS 23.040 V6.8.1 section 9.2.3.12.1.
-     *  Validity Period(Minimum) -> 5 mins
-     *  Validity Period(Maximum) -> 635040 mins(i.e.63 weeks).
-     *  Any Other values included Negative considered as Invalid Validity Period of the message.
-     */
-    void sendTextWithOptionsUsingSubscriber(in int subId, String callingPkg, in String destAddr,
-            in String scAddr, in String text, in PendingIntent sentIntent,
-            in PendingIntent deliveryIntent, in int priority, in boolean isExpectMore,
-            in int validityPeriod);
-
-    /**
      * Inject an SMS PDU into the android platform.
      *
      * @param pdu is the byte array of pdu to be injected into android application framework
@@ -331,6 +233,17 @@ interface ISms {
      *  the same time an SMS received from radio is acknowledged back.
      */
     void injectSmsPdu(in byte[] pdu, String format, in PendingIntent receivedIntent);
+
+    /**
+     * Update the status of a pending (send-by-IP) SMS message and resend by PSTN if necessary.
+     * This outbound message was handled by the carrier app. If the carrier app fails to send
+     * this message, it would be resent by PSTN.
+     *
+     * @param messageRef the reference number of the SMS message.
+     * @param success True if and only if the message was sent successfully. If its value is
+     *  false, this message should be resent via PSTN.
+     */
+    void updateSmsSendStatus(int messageRef, boolean success);
 
     /**
      * Send a multi-part text based SMS.
@@ -387,148 +300,82 @@ interface ISms {
             in List<PendingIntent> deliveryIntents);
 
     /**
-     * Send a multi-part text based SMS with options using Subscription Id.
-     *
-     * @param subId the subId on which the SMS has to be sent.
-     * @param destinationAddress the address to send the message to
-     * @param scAddress is the service center address or null to use
-     *   the current default SMSC
-     * @param parts an <code>ArrayList</code> of strings that, in order,
-     *   comprise the original message
-     * @param sentIntents if not null, an <code>ArrayList</code> of
-     *   <code>PendingIntent</code>s (one for each message part) that is
-     *   broadcast when the corresponding message part has been sent.
-     *   The result code will be <code>Activity.RESULT_OK<code> for success,
-     *   or one of these errors:
-     *   <code>RESULT_ERROR_GENERIC_FAILURE</code>
-     *   <code>RESULT_ERROR_RADIO_OFF</code>
-     *   <code>RESULT_ERROR_NULL_PDU</code>.
-     * @param deliveryIntents if not null, an <code>ArrayList</code> of
-     *   <code>PendingIntent</code>s (one for each message part) that is
-     *   broadcast when the corresponding message part has been delivered
-     *   to the recipient.  The raw pdu of the status report is in the
-     *   extended data ("pdu").
-     * @param priority Priority level of the message
-     *  Refer specification See 3GPP2 C.S0015-B, v2.0, table 4.5.9-1
-     *  ---------------------------------
-     *  PRIORITY      | Level of Priority
-     *  ---------------------------------
-     *      '00'      |     Normal
-     *      '01'      |     Interactive
-     *      '10'      |     Urgent
-     *      '11'      |     Emergency
-     *  ----------------------------------
-     *  Any Other values included Negative considered as Invalid Priority Indicator of the message.
-     * @param isExpectMore is a boolean to indicate the sending message is multi segmented or not.
-     * @param validityPeriod Validity Period of the message in mins.
-     *  Refer specification 3GPP TS 23.040 V6.8.1 section 9.2.3.12.1.
-     *  Validity Period(Minimum) -> 5 mins
-     *  Validity Period(Maximum) -> 635040 mins(i.e.63 weeks).
-     *  Any Other values included Negative considered as Invalid Validity Period of the message.
-     */
-    void sendMultipartTextWithOptionsUsingSubscriber(in int subId, String callingPkg,
-            in String destinationAddress, in String scAddress, in List<String> parts,
-            in List<PendingIntent> sentIntents, in List<PendingIntent> deliveryIntents,
-            in int priority, in boolean isExpectMore, in int validityPeriod);
-
-    /**
      * Enable reception of cell broadcast (SMS-CB) messages with the given
-     * message identifier and RAN type. The RAN type specify this message ID
-     * belong to 3GPP (GSM) or 3GPP2(CDMA). Note that if two different clients
-     * enable the same message identifier, they must both disable it for the
-     * device to stop receiving those messages.
+     * message identifier. Note that if two different clients enable the same
+     * message identifier, they must both disable it for the device to stop
+     * receiving those messages.
      *
      * @param messageIdentifier Message identifier as specified in TS 23.041 (3GPP) or
      *   C.R1001-G (3GPP2)
-     * @param ranType as defined in class SmsManager, the value can be one of these:
-     *    android.telephony.SmsMessage.CELL_BROADCAST_RAN_TYPE_GSM
-     *    android.telephony.SmsMessage.CELL_BROADCAST_RAN_TYPE_CDMA
      * @return true if successful, false otherwise
      *
-     * @see #disableCellBroadcast(int, int)
+     * @see #disableCellBroadcast(int)
      */
-    boolean enableCellBroadcast(int messageIdentifier, int ranType);
+    boolean enableCellBroadcast(int messageIdentifier);
 
     /**
      * Enable reception of cell broadcast (SMS-CB) messages with the given
-     * message identifier and RAN type. The RAN type specify this message ID
-     * belong to 3GPP (GSM) or 3GPP2(CDMA). Note that if two different clients
-     * enable the same message identifier, they must both disable it for the
-     * device to stop receiving those messages.
+     * message identifier. Note that if two different clients enable the same
+     * message identifier, they must both disable it for the device to stop
+     * receiving those messages.
      *
      * @param messageIdentifier Message identifier as specified in TS 23.041 (3GPP) or
      *   C.R1001-G (3GPP2)
      * @param subId for which the broadcast has to be enabled
-     * @param ranType as defined in class SmsManager, the value can be one of these:
-     *    android.telephony.SmsMessage.CELL_BROADCAST_RAN_TYPE_GSM
-     *    android.telephony.SmsMessage.CELL_BROADCAST_RAN_TYPE_CDMA
      * @return true if successful, false otherwise
      *
-     * @see #disableCellBroadcast(int, int)
+     * @see #disableCellBroadcast(int)
      */
-    boolean enableCellBroadcastForSubscriber(int subId, int messageIdentifier, int ranType);
+    boolean enableCellBroadcastForSubscriber(in int subId, int messageIdentifier);
 
     /**
      * Disable reception of cell broadcast (SMS-CB) messages with the given
-     * message identifier and RAN type. The RAN type specify this message ID
-     * belong to 3GPP (GSM) or 3GPP2(CDMA). Note that if two different clients
-     * enable the same message identifier, they must both disable it for the
-     * device to stop receiving those messages.
+     * message identifier. Note that if two different clients enable the same
+     * message identifier, they must both disable it for the device to stop
+     * receiving those messages.
      *
      * @param messageIdentifier Message identifier as specified in TS 23.041 (3GPP) or
      *   C.R1001-G (3GPP2)
-     * @param ranType as defined in class SmsManager, the value can be one of these:
-     *    android.telephony.SmsMessage.CELL_BROADCAST_RAN_TYPE_GSM
-     *    android.telephony.SmsMessage.CELL_BROADCAST_RAN_TYPE_CDMA
      * @return true if successful, false otherwise
      *
-     * @see #enableCellBroadcast(int, int)
+     * @see #enableCellBroadcast(int)
      */
-    boolean disableCellBroadcast(int messageIdentifier, int ranType);
+    boolean disableCellBroadcast(int messageIdentifier);
 
     /**
      * Disable reception of cell broadcast (SMS-CB) messages with the given
-     * message identifier and RAN type. The RAN type specify this message ID
-     * belong to 3GPP (GSM) or 3GPP2(CDMA). Note that if two different clients
-     * enable the same message identifier, they must both disable it for the
-     * device to stop receiving those messages.
+     * message identifier. Note that if two different clients enable the same
+     * message identifier, they must both disable it for the device to stop
+     * receiving those messages.
      *
      * @param messageIdentifier Message identifier as specified in TS 23.041 (3GPP) or
      *   C.R1001-G (3GPP2)
      * @param subId for which the broadcast has to be disabled
-     * @param ranType as defined in class SmsManager, the value can be one of these:
-     *    android.telephony.SmsMessage.CELL_BROADCAST_RAN_TYPE_GSM
-     *    android.telephony.SmsMessage.CELL_BROADCAST_RAN_TYPE_CDMA
      * @return true if successful, false otherwise
      *
-     * @see #enableCellBroadcast(int, int)
+     * @see #enableCellBroadcast(int)
      */
-    boolean disableCellBroadcastForSubscriber(int subId, int messageIdentifier, int ranType);
+    boolean disableCellBroadcastForSubscriber(in int subId, int messageIdentifier);
 
     /*
      * Enable reception of cell broadcast (SMS-CB) messages with the given
-     * message identifier range and RAN type. The RAN type specify this message
-     * ID range belong to 3GPP (GSM) or 3GPP2(CDMA). Note that if two different
-     * clients enable a message identifier range, they must both disable it for
-     * the device to stop receiving those messages.
+     * message identifier range. Note that if two different clients enable
+     * a message identifier range, they must both disable it for the device
+     * to stop receiving those messages.
      *
      * @param startMessageId first message identifier as specified in TS 23.041 (3GPP) or
      *   C.R1001-G (3GPP2)
      * @param endMessageId last message identifier as specified in TS 23.041 (3GPP) or
      *   C.R1001-G (3GPP2)
-     * @param ranType as defined in class SmsManager, the value can be one of these:
-     *    android.telephony.SmsMessage.CELL_BROADCAST_RAN_TYPE_GSM
-     *    android.telephony.SmsMessage.CELL_BROADCAST_RAN_TYPE_CDMA
      * @return true if successful, false otherwise
      *
-     * @see #disableCellBroadcastRange(int, int, int)
+     * @see #disableCellBroadcastRange(int, int)
      */
-    boolean enableCellBroadcastRange(int startMessageId, int endMessageId, int ranType);
+    boolean enableCellBroadcastRange(int startMessageId, int endMessageId);
 
     /*
      * Enable reception of cell broadcast (SMS-CB) messages with the given
-     * message identifier range and RAN type. The RAN type specify this message ID range
-     * belong to 3GPP (GSM) or 3GPP2(CDMA). Note that if two different clients enable
+     * message identifier range. Note that if two different clients enable
      * a message identifier range, they must both disable it for the device
      * to stop receiving those messages.
      *
@@ -537,20 +384,15 @@ interface ISms {
      * @param endMessageId last message identifier as specified in TS 23.041 (3GPP) or
      *   C.R1001-G (3GPP2)
      * @param subId for which the broadcast has to be enabled
-     * @param ranType as defined in class SmsManager, the value can be one of these:
-     *    android.telephony.SmsMessage.CELL_BROADCAST_RAN_TYPE_GSM
-     *    android.telephony.SmsMessage.CELL_BROADCAST_RAN_TYPE_CDMA
      * @return true if successful, false otherwise
      *
-     * @see #disableCellBroadcastRange(int, int, int)
+     * @see #disableCellBroadcastRange(int, int)
      */
-    boolean enableCellBroadcastRangeForSubscriber(int subId, int startMessageId, int endMessageId,
-            int ranType);
+    boolean enableCellBroadcastRangeForSubscriber(int subId, int startMessageId, int endMessageId);
 
     /**
      * Disable reception of cell broadcast (SMS-CB) messages with the given
-     * message identifier range and RAN type. The RAN type specify this message ID range
-     * belong to 3GPP (GSM) or 3GPP2(CDMA). Note that if two different clients enable
+     * message identifier range. Note that if two different clients enable
      * a message identifier range, they must both disable it for the device
      * to stop receiving those messages.
      *
@@ -558,36 +400,29 @@ interface ISms {
      *   C.R1001-G (3GPP2)
      * @param endMessageId last message identifier as specified in TS 23.041 (3GPP) or
      *   C.R1001-G (3GPP2)
-     * @param ranType as defined in class SmsManager, the value can be one of these:
-     *    android.telephony.SmsMessage.CELL_BROADCAST_RAN_TYPE_GSM
-     *    android.telephony.SmsMessage.CELL_BROADCAST_RAN_TYPE_CDMA
+     * @return true if successful, false otherwise
+     *
+     * @see #enableCellBroadcastRange(int, int)
+     */
+    boolean disableCellBroadcastRange(int startMessageId, int endMessageId);
+
+    /**
+     * Disable reception of cell broadcast (SMS-CB) messages with the given
+     * message identifier range. Note that if two different clients enable
+     * a message identifier range, they must both disable it for the device
+     * to stop receiving those messages.
+     *
+     * @param startMessageId first message identifier as specified in TS 23.041 (3GPP) or
+     *   C.R1001-G (3GPP2)
+     * @param endMessageId last message identifier as specified in TS 23.041 (3GPP) or
+     *   C.R1001-G (3GPP2)
+     * @param subId for which the broadcast has to be disabled
      * @return true if successful, false otherwise
      *
      * @see #enableCellBroadcastRange(int, int, int)
      */
-    boolean disableCellBroadcastRange(int startMessageId, int endMessageId, int ranType);
-
-    /**
-     * Disable reception of cell broadcast (SMS-CB) messages with the given
-     * message identifier range and RAN type. The RAN type specify this message ID range
-     * belong to 3GPP (GSM) or 3GPP2(CDMA). Note that if two different clients enable
-     * a message identifier range, they must both disable it for the device
-     * to stop receiving those messages.
-     *
-     * @param startMessageId first message identifier as specified in TS 23.041 (3GPP) or
-     *   C.R1001-G (3GPP2)
-     * @param endMessageId last message identifier as specified in TS 23.041 (3GPP) or
-     *   C.R1001-G (3GPP2)
-     * @param subId for which the broadcast has to be disabled
-     * @param ranType as defined in class SmsManager, the value can be one of these:
-     *    android.telephony.SmsMessage.CELL_BROADCAST_RAN_TYPE_GSM
-     *    android.telephony.SmsMessage.CELL_BROADCAST_RAN_TYPE_CDMA
-     * @return true if successful, false otherwise
-     *
-     * @see #enableCellBroadcastRange(int, int, int, int)
-     */
     boolean disableCellBroadcastRangeForSubscriber(int subId, int startMessageId,
-            int endMessageId, int ranType);
+            int endMessageId);
 
     /**
      * Returns the premium SMS send permission for the specified package.
@@ -607,6 +442,10 @@ interface ISms {
      */
     void setPremiumSmsPermission(String packageName, int permission);
 
+    /**
+     * Set the SMS send permission for the specified package.
+     * Requires system permission.
+     */
      /**
      * Set the SMS send permission for the specified package.
      * Requires system permission.
@@ -632,14 +471,6 @@ interface ISms {
      * @see #getImsSmsFormat()
      */
     boolean isImsSmsSupportedForSubscriber(int subId);
-
-    /**
-     * User needs to pick SIM for SMS if multiple SIMs present and if current subId passed in is not
-     * active/valid.
-     * @param subId current subId for sending SMS
-     * @return true if SIM for SMS sending needs to be chosen
-     */
-    boolean isSmsSimPickActivityNeeded(int subId);
 
     /*
      * get user prefered SMS subId
@@ -744,28 +575,316 @@ interface ISms {
                 String scAddress, in List<PendingIntent> sentIntents,
                 in List<PendingIntent> deliveryIntents);
 
+    // MTK-START
     /**
-     * Get the capacity count of sms on Icc card.
+     * Retrieves all messages currently stored on ICC based on different mode.
+     * Ex. CDMA mode or GSM mode for international cards.
      *
-     * @param subId for subId which getSmsCapacityOnIcc is queried.
-     * @return capacity of ICC
+     * @param subId subscription identity
+     * @param mode the GSM mode or CDMA mode
+     *
+     * @return list of SmsRawData of all sms on ICC
      */
-    int getSmsCapacityOnIccForSubscriber(int subId);
+    List<SmsRawData> getAllMessagesFromIccEfByModeForSubscriber(in int subId, String callingPkg,
+            int mode);
 
     /**
-     * Get the SMSC from Icc card.
+     * Copy a text SMS to the ICC.
      *
-     * @param subId for subId which getSmscAddressFromIccForSubscriber is queried.
-     * @return SMSC of ICC
+     * @param subId subscription identity
+     * @param scAddress Service center address
+     * @param address   Destination address or original address
+     * @param text      List of message text
+     * @param status    message status (STATUS_ON_ICC_READ, STATUS_ON_ICC_UNREAD,
+     *                  STATUS_ON_ICC_SENT, STATUS_ON_ICC_UNSENT)
+     * @param timestamp Timestamp when service center receive the message
+     * @return success or not
+     *
      */
-    String getSmscAddressFromIccForSubscriber(int subId);
+    int copyTextMessageToIccCardForSubscriber(in int subId, String callingPkg,
+                    in String scAddress, in String address, in List<String> text,
+                    in int status, in long timestamp);
 
     /**
-     * Set the SMSC to Icc card.
+     * Send a data message with original port
      *
-     * @param subId for subId which setSmscAddressToIccForSubscriber is queried.
-     * @param scAddress is the service center address
-     * @return true if SMSC is set successfully, false otherwise
+     * @param subId the subscription identity
+     * @param destAddr destination address
+     * @param scAddr the SMSC to send the message through, or NULL for the
+     *  default SMSC
+     * @param destPort destination port
+     * @param originalPort original port
+     * @param data the body of the message to send
+     * @param sentIntent if not NULL this <code>PendingIntent</code> is
+     *  broadcast when the message is sucessfully sent, or failed.
+     *  The result code will be <code>Activity.RESULT_OK<code> for success,
+     *  or one of these errors:<br>
+     *  <code>RESULT_ERROR_GENERIC_FAILURE</code><br>
+     *  <code>RESULT_ERROR_RADIO_OFF</code><br>
+     *  <code>RESULT_ERROR_NULL_PDU</code><br>
+     *  For <code>RESULT_ERROR_GENERIC_FAILURE</code> the sentIntent may include
+     *  the extra "errorCode" containing a radio technology specific value,
+     *  generally only useful for troubleshooting.<br>
+     *  The per-application based SMS control checks sentIntent. If sentIntent
+     *  is NULL the caller will be checked against all unknown applicaitons,
+     *  which cause smaller number of SMS to be sent in checking period.
+     * @param deliveryIntent if not NULL this <code>PendingIntent</code> is
+     *  broadcast when the message is delivered to the recipient.  The
+     *  raw pdu of the status report is in the extended data ("pdu").
      */
-    boolean setSmscAddressToIccForSubscriber(int subId, String scAdress);
+    void sendDataWithOriginalPortForSubscriber(in int subId, String callingPkg,
+            in String destAddr, in String scAddr, in int destPort,
+            in int originalPort, in byte[] data, in PendingIntent sentIntent,
+            in PendingIntent deliveryIntent);
+
+    /**
+     * Judge if SMS subsystem is ready or not
+     *
+     * @param subId the subscription identity
+     *
+     * @return true for success
+     */
+    boolean isSmsReadyForSubscriber(in int subId);
+
+    /**
+     * Set the memory storage status of the SMS
+     * This function is used for FTA test only
+     *
+     * @param subId the subscription identity
+     * @param status false for storage full, true for storage available
+     *
+     */
+    void setSmsMemoryStatusForSubscriber(in int subId, boolean status);
+
+    /**
+     * Get SMS SIM Card memory's total and used number
+     *
+     * @param subId the subscription identity
+     *
+     * @return <code>IccSmsStorageStatus</code> object
+     *
+     */
+    IccSmsStorageStatus getSmsSimMemoryStatusForSubscriber(in int subId, String callingPkg);
+
+    /**
+     * Send an SMS with specified encoding type.
+     *
+     * @param subId subscriptioni identity
+     * @param destAddr the address to send the message to
+     * @param scAddr the SMSC to send the message through, or NULL for the
+     *  default SMSC
+     * @param text the body of the message to send
+     * @param encodingType the encoding type of content of message(GSM 7-bit, Unicode or Automatic)
+     * @param sentIntent if not NULL this <code>PendingIntent</code> is
+     *  broadcast when the message is sucessfully sent, or failed.
+     *  The result code will be <code>Activity.RESULT_OK<code> for success,
+     *  or one of these errors:<br>
+     *  <code>RESULT_ERROR_GENERIC_FAILURE</code><br>
+     *  <code>RESULT_ERROR_RADIO_OFF</code><br>
+     *  <code>RESULT_ERROR_NULL_PDU</code><br>
+     *  For <code>RESULT_ERROR_GENERIC_FAILURE</code> the sentIntent may include
+     *  the extra "errorCode" containing a radio technology specific value,
+     *  generally only useful for troubleshooting.<br>
+     *  The per-application based SMS control checks sentIntent. If sentIntent
+     *  is NULL the caller will be checked against all unknown applications,
+     *  which cause smaller number of SMS to be sent in checking period.
+     * @param deliveryIntent if not NULL this <code>PendingIntent</code> is
+     *  broadcast when the message is delivered to the recipient.  The
+     *  raw pdu of the status report is in the extended data ("pdu").
+     */
+    void sendTextWithEncodingTypeForSubscriber(in int subId, String callingPkg,
+            in String destAddr, in String scAddr, in String text, in int encodingType,
+            in PendingIntent sentIntent, in PendingIntent deliveryIntent);
+
+    /**
+     * Send a multi-part text based SMS with specified encoding type.
+     *
+     * @param subId subscriptioni identity
+     * @param destAddr the address to send the message to
+     * @param scAddr is the service center address or null to use
+     *   the current default SMSC
+     * @param parts an <code>ArrayList</code> of strings that, in order,
+     *   comprise the original message
+     * @param encodingType the encoding type of content of message(GSM 7-bit, Unicode or Automatic)
+     * @param sentIntents if not null, an <code>ArrayList</code> of
+     *   <code>PendingIntent</code>s (one for each message part) that is
+     *   broadcast when the corresponding message part has been sent.
+     *   The result code will be <code>Activity.RESULT_OK<code> for success,
+     *   or one of these errors:
+     *   <code>RESULT_ERROR_GENERIC_FAILURE</code>
+     *   <code>RESULT_ERROR_RADIO_OFF</code>
+     *   <code>RESULT_ERROR_NULL_PDU</code>.
+     * @param deliveryIntents if not null, an <code>ArrayList</code> of
+     *   <code>PendingIntent</code>s (one for each message part) that is
+     *   broadcast when the corresponding message part has been delivered
+     *   to the recipient.  The raw pdu of the status report is in the
+     *   extended data ("pdu").
+     */
+    void sendMultipartTextWithEncodingTypeForSubscriber(in int subId, String callingPkg,
+            in String destAddr, in String scAddr, in List<String> parts, in int encodingType,
+            in List<PendingIntent> sentIntents, in List<PendingIntent> deliveryIntents);
+
+    /**
+     * Copy a text SMS to the ICC.
+     *
+     * @param subId subscriptioni identity
+     * @param scAddress Service center address
+     * @param address   Destination address or original address
+     * @param text      List of message text
+     * @param status    message status (STATUS_ON_ICC_READ, STATUS_ON_ICC_UNREAD,
+     *                  STATUS_ON_ICC_SENT, STATUS_ON_ICC_UNSENT)
+     * @param timestamp Timestamp when service center receive the message
+     * @return SimSmsInsertStatus
+     *
+     */
+    SimSmsInsertStatus insertTextMessageToIccCardForSubscriber(in int subId,
+            String callingPkg, in String scAddress, in String address,
+            in List<String> text, in int status, in long timestamp);
+
+    /**
+     * Copy a raw SMS PDU to the ICC.
+     *
+     * @param subId subscriptioni identity
+     * @param status message status (STATUS_ON_ICC_READ, STATUS_ON_ICC_UNREAD,
+     *               STATUS_ON_ICC_SENT, STATUS_ON_ICC_UNSENT)
+     * @param pdu the raw PDU to store
+     * @param smsc encoded smsc service center
+     * @return SimSmsInsertStatus
+     *
+     */
+    SimSmsInsertStatus insertRawMessageToIccCardForSubscriber(in int subId,
+    		String callingPkg, int status, in byte[] pdu, in byte[] smsc);
+
+    /**
+     * Send an SMS with specified encoding type.
+     *
+     * @param subId subscriptioni identity
+     * @param destAddr the address to send the message to
+     * @param scAddr the SMSC to send the message through, or NULL for the
+     *  default SMSC
+     * @param text the body of the message to send
+     * @param extraParams extra parameters, such as validity period, encoding type
+     * @param sentIntent if not NULL this <code>PendingIntent</code> is
+     *  broadcast when the message is sucessfully sent, or failed.
+     * @param deliveryIntent if not NULL this <code>PendingIntent</code> is
+     *  broadcast when the message is delivered to the recipient.  The
+     *  raw pdu of the status report is in the extended data ("pdu").
+     */
+    void sendTextWithExtraParamsForSubscriber(in int subId, String callingPkg,
+            in String destAddr, in String scAddr, in String text,
+            in Bundle extraParams, in PendingIntent sentIntent,
+            in PendingIntent deliveryIntent);
+
+    /**
+     * Send a multi-part text based SMS with specified encoding type.
+     *
+     * @param subId subscriptioni identity
+     * @param destAddr the address to send the message to
+     * @param scAddr is the service center address or null to use
+     *   the current default SMSC
+     * @param parts an <code>ArrayList</code> of strings that, in order,
+     *   comprise the original message
+     * @param extraParams extra parameters, such as validity period, encoding type
+     * @param sentIntents if not null, an <code>ArrayList</code> of
+     *   <code>PendingIntent</code>s (one for each message part) that is
+     *   broadcast when the corresponding message part has been sent.
+     * @param deliveryIntents if not null, an <code>ArrayList</code> of
+     *   <code>PendingIntent</code>s (one for each message part) that is
+     *   broadcast when the corresponding message part has been delivered
+     *   to the recipient.  The raw pdu of the status report is in the
+     *   extended data ("pdu").
+     */
+    void sendMultipartTextWithExtraParamsForSubscriber(in int subId, String callingPkg,
+            in String destAddr, in String scAddr, in List<String> parts,
+            in Bundle extraParams, in List<PendingIntent> sentIntents,
+            in List<PendingIntent> deliveryIntents);
+
+    /*
+    * Get sms parameters from EFsmsp, such as the validity period & its format,
+    * protocol identifier and decode char set value
+    *
+    * @param subId subscriptioni identity
+    */
+    SmsParameters getSmsParametersForSubscriber(in int subId, String callingPkg);
+
+    /*
+     * Save sms parameters into EFsmsp
+     *
+     * @param subId subscriptioni identity
+     */
+    boolean setSmsParametersForSubscriber(in int subId, String callingPkg,
+    		in SmsParameters params);
+
+    /**
+     * Retrieves message currently stored on ICC by index.
+     *
+     * @param subId subscriptioni identity
+     * @param index the index of sms save in EFsms
+     *
+     * @return SmsRawData of sms on ICC
+     */
+    SmsRawData getMessageFromIccEfForSubscriber(in int subId, String callingPkg, in int index);
+
+    /**
+     * Get the cell broadcast config.
+     *
+     * @param subId subscriptioni identity
+     *
+     * @return Cell broadcast config.
+     */
+    SmsCbConfigInfo[] getCellBroadcastSmsConfigForSubscriber(in int subId);
+
+    /**
+     * Set the cell broadcast config.
+     *
+     * @param subId subscriptioni identity
+     * @param channels the channels setting
+     * @param languages the language setting
+     *
+     * @return true if set successfully; false if set failed
+     */
+    boolean setCellBroadcastSmsConfigForSubscriber(in int subId,
+    		in SmsCbConfigInfo[] channels, in SmsCbConfigInfo[] languages);
+
+    /**
+     * Query the activation status of cell broadcast.
+     *
+     * @param subId subscriptioni identity
+     *
+     * @return true if activate; false if inactivate.
+     */
+    boolean queryCellBroadcastSmsActivationForSubscriber(in int subId);
+
+    /**
+     * Activate or deactivate cell broadcast SMS.
+     *
+     * @param subId subscriptioni identity
+     * @param activate 0 = activate, 1 = deactivate
+     *
+     * @return true if activate successfully; false if activate failed
+     */
+    boolean activateCellBroadcastSmsForSubscriber(in int subId, in boolean activate);
+
+    /**
+     * Remove specified channel and serial of cb message.
+     *
+     * @param channelId removed channel id
+     * @param serialId removed serial id
+     *
+     * @return true process successfully; false process failed.
+     *
+     */
+    boolean removeCellBroadcastMsgForSubscriber(in int subId, in int channelId,
+    		in int serialId);
+
+    /**
+     * Set the ETWS config to modem
+     *
+     * @param subId subscriptioni identity
+     * @param mode the etws mode
+     *
+     * @return true if set successfully; false if set failed
+     */
+    boolean setEtwsConfigForSubscriber(in int subId, in int mode);
+    // MTK-END
 }

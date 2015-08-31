@@ -21,6 +21,7 @@ import android.os.Bundle;
 import android.telephony.CellInfo;
 import android.telephony.IccOpenLogicalChannelResponse;
 import android.telephony.NeighboringCellInfo;
+import android.telephony.PhoneRatFamily;
 import java.util.List;
 
 
@@ -48,13 +49,8 @@ interface ITelephony {
     void call(String callingPackage, String number);
 
     /**
-     * Toggle between 3G and LTE (NT_MODE_CDMA, NT_MODE_GLOBAL)
-     * @param boolean to turn on and off LTE
-     */
-    void toggleLTE(boolean on);
-
-    /**
      * End call if there is a call in progress, otherwise does nothing.
+     *
      * @return whether it hung up
      */
     boolean endCall();
@@ -82,23 +78,6 @@ interface ITelephony {
      * directly from the key queue thread).
      */
     void answerRingingCall();
-
-    /**
-     * Answer the currently-ringing call on particular subId .
-     *
-     * If there's already a current active call, that call will be
-     * automatically put on hold.  If both lines are currently in use, the
-     * current active call will be ended.
-     *
-     * TODO: provide a flag to let the caller specify what policy to use
-     * if both lines are in use.  (The current behavior is hardwired to
-     * "answer incoming, end ongoing", which is how the CALL button
-     * is specced to behave.)
-     *
-     * TODO: this should be a oneway call (especially since it's called
-     * directly from the key queue thread).
-     */
-    void answerRingingCallForSubscriber(int subId);
 
     /**
      * Silence the ringer if an incoming call is currently ringing.
@@ -344,11 +323,6 @@ interface ITelephony {
      */
     boolean isDataConnectivityPossible();
 
-    /**
-     * Report whether mms data connectivity is possible.
-     */
-    boolean isDataPossibleForSubscription(int subId, String apnType);
-
     Bundle getCellLocation();
 
     /**
@@ -363,8 +337,25 @@ interface ITelephony {
      */
      int getCallStateForSubscriber(int subId);
 
+    /**
+     * Returns the data activity.
+     */
      int getDataActivity();
+
+    /**
+     * Returns the data activity for a subId.
+     */
+     int getDataActivityForSubscriber(int subId);
+
+    /**
+     * Returns the data state.
+     */
      int getDataState();
+
+    /**
+     * Returns the data state for a subId.
+     */
+     int getDataStateForSubscriber(int subId);
 
     /**
      * Returns the current active phone type as integer.
@@ -426,11 +417,6 @@ interface ITelephony {
     boolean needsOtaServiceProvisioning();
 
     /**
-     * Sets the voicemail number for a particular subscriber.
-     */
-    boolean setVoiceMailNumber(int subId, String alphaTag, String number);
-
-    /**
       * Returns the unread count of voicemails
       */
     int getVoiceMessageCount();
@@ -479,13 +465,6 @@ interface ITelephony {
     int getVoiceNetworkTypeForSubscriber(int subId);
 
     /**
-      * Return icc operator numeric for given subId
-      * @param subId user preferred subId.
-      * Returns icc operator numeric
-      */
-    String getIccOperatorNumeric(int subId);
-
-    /**
      * Return true if an ICC card is present
      */
     boolean hasIccCard();
@@ -495,7 +474,7 @@ interface ITelephony {
      * @param slotId user preferred slotId.
      * Return true if an ICC card is present
      */
-    boolean hasIccCardUsingSlotId(int slotId);
+    boolean hasIccCardUsingSlotId(long slotId);
 
     /**
      * Return if the current radio is LTE on CDMA. This
@@ -518,33 +497,19 @@ interface ITelephony {
     int getLteOnCdmaModeForSubscriber(int subId);
 
     /**
-     * Returns the all observed cell information of the device.
-     */
-    List<CellInfo> getAllCellInfo();
-
-
-    List<CellInfo> getAllCellInfoUsingSubId(int subId);
-
-    /**
-     * Sets minimum time in milli-seconds between onCellInfoChanged
-     */
-    void setCellInfoListRate(int rateInMillis);
-
-
-    /**
      * Return if the current radio is LTE on GSM
      */
     int getLteOnGsmMode();
 
     /**
-     * Adds a protected sms address to the {@link Settings.Secure.PROTECTED_SMS_ADDRESSES}
+     * Returns the all observed cell information of the device.
      */
-    void addProtectedSmsAddress(String address);
+    List<CellInfo> getAllCellInfo();
 
     /**
-     * Revokes a protected sms address from {@link Settings.Secure.PROTECTED_SMS_ADDRESSES}
+     * Sets minimum time in milli-seconds between onCellInfoChanged
      */
-    boolean revokeProtectedSmsAddress(String address);
+    void setCellInfoListRate(int rateInMillis);
 
     /**
      * get default sim
@@ -562,18 +527,6 @@ interface ITelephony {
      */
     IccOpenLogicalChannelResponse iccOpenLogicalChannel(String AID);
 
-
-    /**
-     * Opens a logical channel to the ICC card for a particular subId.
-     *
-     * Input parameters equivalent to TS 27.007 AT+CCHO command.
-     *
-     * @param subId user preferred subId.
-     * @param AID Application id. See ETSI 102.221 and 101.220.
-     * @return an IccOpenLogicalChannelResponse object.
-     */
-    IccOpenLogicalChannelResponse iccOpenLogicalChannelUsingSubId(int subId, String AID);
-
     /**
      * Closes a previously opened logical channel to the ICC card.
      *
@@ -584,19 +537,6 @@ interface ITelephony {
      * @return true if the channel was closed successfully.
      */
     boolean iccCloseLogicalChannel(int channel);
-
-    /**
-     * Closes a previously opened logical channel to the ICC card for a
-     * particular subId.
-     *
-     * Input parameters equivalent to TS 27.007 AT+CCHC command.
-     *
-     * @param subId user preferred subId.
-     * @param channel is the channel id to be closed as retruned by a
-     *            successful iccOpenLogicalChannel.
-     * @return true if the channel was closed successfully.
-     */
-    boolean iccCloseLogicalChannelUsingSubId(int subId, int channel);
 
     /**
      * Transmit an APDU to the ICC card over a logical channel.
@@ -613,32 +553,10 @@ interface ITelephony {
      *            is sent to the SIM.
      * @param data Data to be sent with the APDU.
      * @return The APDU response from the ICC card with the status appended at
-     *            the end.
+     *            the end. If an error occurs, an empty string is returned.
      */
     String iccTransmitApduLogicalChannel(int channel, int cla, int instruction,
             int p1, int p2, int p3, String data);
-
-    /**
-     * Transmit an APDU to the ICC card over a logical channel for a
-     * particular subId.
-     *
-     * Input parameters equivalent to TS 27.007 AT+CGLA command.
-     *
-     * @param subId user preferred subId.
-     * @param channel is the channel id to be closed as retruned by a
-     *            successful iccOpenLogicalChannel.
-     * @param cla Class of the APDU command.
-     * @param instruction Instruction of the APDU command.
-     * @param p1 P1 value of the APDU command.
-     * @param p2 P2 value of the APDU command.
-     * @param p3 P3 value of the APDU command. If p3 is negative a 4 byte APDU
-     *            is sent to the SIM.
-     * @param data Data to be sent with the APDU.
-     * @return The APDU response from the ICC card with the status appended at
-     *            the end.
-     */
-    String iccTransmitApduLogicalChannelUsingSubId(int subId, int channel, int cla,
-            int instruction, int p1, int p2, int p3, String data);
 
     /**
      * Transmit an APDU to the ICC card over the basic channel.
@@ -653,29 +571,9 @@ interface ITelephony {
      *            is sent to the SIM.
      * @param data Data to be sent with the APDU.
      * @return The APDU response from the ICC card with the status appended at
-     *            the end.
+     *            the end. If an error occurs, an empty string is returned.
      */
     String iccTransmitApduBasicChannel(int cla, int instruction,
-            int p1, int p2, int p3, String data);
-
-    /**
-     * Transmit an APDU to the ICC card over the basic channel for a particular
-     * subId.
-     *
-     * Input parameters equivalent to TS 27.007 AT+CSIM command.
-     *
-     * @param subId user preferred subId.
-     * @param cla Class of the APDU command.
-     * @param instruction Instruction of the APDU command.
-     * @param p1 P1 value of the APDU command.
-     * @param p2 P2 value of the APDU command.
-     * @param p3 P3 value of the APDU command. If p3 is negative a 4 byte APDU
-     *            is sent to the SIM.
-     * @param data Data to be sent with the APDU.
-     * @return The APDU response from the ICC card with the status appended at
-     *            the end.
-     */
-    String iccTransmitApduBasicChannelUsingSubId(int subId, int cla, int instruction,
             int p1, int p2, int p3, String data);
 
     /**
@@ -691,22 +589,6 @@ interface ITelephony {
      */
     byte[] iccExchangeSimIO(int fileID, int command, int p1, int p2, int p3,
             String filePath);
-
-    /**
-     * Returns the response APDU for a command APDU sent through SIM_IO
-     * for a particular subId.
-     *
-     * @param subId user preferred subId.
-     * @param fileID
-     * @param command
-     * @param p1 P1 value of the APDU command.
-     * @param p2 P2 value of the APDU command.
-     * @param p3 P3 value of the APDU command.
-     * @param filePath
-     * @return The APDU response.
-     */
-    byte[] iccExchangeSimIOUsingSubId(int subId, int fileID, int command, int p1, int p2,
-            int p3, String filePath);
 
     /**
      * Send ENVELOPE to the SIM and returns the response.
@@ -793,18 +675,18 @@ interface ITelephony {
     boolean setPreferredNetworkType(int networkType);
 
     /**
-     * User enable/disable Mobile Data per subscription.
+     * User enable/disable Mobile Data.
      *
      * @param enable true to turn on, else false
      */
-    void setDataEnabled(int subId, boolean enable);
+    void setDataEnabled(boolean enable);
 
     /**
      * Get the user enabled state of Mobile Data.
      *
      * @return true on enabled
      */
-    boolean getDataEnabled(int subId);
+    boolean getDataEnabled();
 
     /**
      * Get P-CSCF address from PCO after data connection is established or modified.
@@ -840,7 +722,7 @@ interface ITelephony {
      *
      * @return carrier privilege status defined in TelephonyManager.
      */
-    int getCarrierPrivilegeStatus();
+    int hasCarrierPrivileges();
 
     /**
      * Similar to above, but check for pkg whose name is pkgname.
@@ -859,6 +741,24 @@ interface ITelephony {
     List<String> getCarrierPackageNamesForIntent(in Intent intent);
 
     /**
+     * Set whether Android should display a simplified Mobile Network Settings UI
+     * for the current ICCID.
+     *
+     * @param subId for which the simplified UI should be enabled or disabled.
+     * @param enable true means enabling the simplified UI.
+     */
+    void enableSimplifiedNetworkSettingsForSubscriber(int subId, boolean enable);
+
+    /**
+     * Get whether a simplified Mobile Network Settings UI is enabled for the
+     * current ICCID.
+     *
+     * @param subId for which the simplified UI should be enabled or disabled.
+     * @return true if the simplified UI is enabled.
+     */
+    boolean getSimplifiedNetworkSettingsEnabledForSubscriber(int subId);
+
+    /**
      * Set the line 1 phone number string and its alphatag for the current ICCID
      * for display purpose only, for example, displayed in Phone Status. It won't
      * change the actual MSISDN/MDN. To unset alphatag or number, pass in a null
@@ -867,9 +767,8 @@ interface ITelephony {
      * @param subId the subscriber that the alphatag and dialing number belongs to.
      * @param alphaTag alpha-tagging of the dailing nubmer
      * @param number The dialing number
-     * @return true if the operation was executed correctly.
      */
-    boolean setLine1NumberForDisplayForSubscriber(int subId, String alphaTag, String number);
+    void setLine1NumberForDisplayForSubscriber(int subId, String alphaTag, String number);
 
     /**
      * Returns the displayed dialing number string if it was set previously via
@@ -908,27 +807,6 @@ interface ITelephony {
     boolean setOperatorBrandOverride(String brand);
 
     /**
-     * Override the roaming indicator for the current ICCID.
-     *
-     * Using this call, the carrier app (see #hasCarrierPrivileges) can override
-     * the platform's notion of a network operator being considered roaming or not.
-     * The change only affects the ICCID that was active when this call was made.
-     *
-     * If null is passed as any of the input, the corresponding value is deleted.
-     *
-     * <p>Requires that the caller have carrier privilege. See #hasCarrierPrivileges.
-     *
-     * @param gsmRoamingList - List of MCCMNCs to be considered roaming for 3GPP RATs.
-     * @param gsmNonRoamingList - List of MCCMNCs to be considered not roaming for 3GPP RATs.
-     * @param cdmaRoamingList - List of SIDs to be considered roaming for 3GPP2 RATs.
-     * @param cdmaNonRoamingList - List of SIDs to be considered not roaming for 3GPP2 RATs.
-     * @return true if the operation was executed correctly.
-     */
-    boolean setRoamingOverride(in List<String> gsmRoamingList,
-            in List<String> gsmNonRoamingList, in List<String> cdmaRoamingList,
-            in List<String> cdmaNonRoamingList);
-
-    /**
      * Returns the result and response from RIL for oem request
      *
      * @param oemReq the data is sent to ril.
@@ -938,17 +816,6 @@ interface ITelephony {
      *         positive value success, data length of response
      */
     int invokeOemRilRequestRaw(in byte[] oemReq, out byte[] oemResp);
-
-    /**
-     * Get ATR (Answer To Reset; as per ISO/IEC 7816-4) from SIM card
-     */
-    byte[] getAtr();
-
-    /**
-     * Get ATR (Answer To Reset; as per ISO/IEC 7816-4) from SIM card
-     * for a particular subId.
-     */
-    byte[] getAtrUsingSubId(int subId);
 
     /**
      * Check if any mobile Radios need to be shutdown.
@@ -963,30 +830,73 @@ interface ITelephony {
     void shutdownMobileRadios();
 
     /**
-     * Enables or disables video calling.
+     * Set phone RAT family
      *
-     * @param enable Whether to enable video calling.
+     * @param rats an PhoneRatFamily array to indicate all phone's new RAT family.
+     *        The length of PhoneRatFamily must equal to phone count.
+     * @return true if start setPhoneRat successfully.
      */
-    void enableVideoCalling(boolean enable);
+    boolean setPhoneRat(in PhoneRatFamily[] rats);
 
     /**
-     * Whether video calling has been enabled by the user.
+     * Get phone RAT Family
      *
-     * @return {@code True} if the user has enabled video calling, {@code false} otherwise.
+     * @param phoneId which phone you want to get
+     * @return phone RAT family for input phone ID
      */
-    boolean isVideoCallingEnabled();
+    int getPhoneRat(in int phoneId);
+
+    String getIccAtr(int slotId);
+    byte[] iccOpenLogicalChannelWithSW(int slotId, String AID);
+    byte[] iccExchangeSimIOUsingSlot(int slotId, int fileID, int command, int p1, int p2, int p3,
+            String filePath);
+    byte[] iccExchangeSimIOExUsingSlot(int slotId, int fileID, int command,
+                                     int p1, int p2, int p3, String filePath, String data, String pin2);
+    
+    
+    /**
+     * Opens a logical channel to the ICC card.
+     *
+     * Input parameters equivalent to TS 27.007 AT+CCHO command.
+     *
+     * @param AID Application id. See ETSI 102.221 and 101.220.
+     * @return an IccOpenLogicalChannelResponse object.
+     */
+    IccOpenLogicalChannelResponse iccOpenLogicalChannelUsingSlot(int slotId, String AID);
 
     /**
-     * Get IMS Registration Status
+     * Closes a previously opened logical channel to the ICC card.
+     *
+     * Input parameters equivalent to TS 27.007 AT+CCHC command.
+     *
+     * @param channel is the channel id to be closed as retruned by a
+     *            successful iccOpenLogicalChannel.
+     * @return true if the channel was closed successfully.
      */
-    boolean isImsRegistered();
+    boolean iccCloseLogicalChannelUsingSlot(int slotId, int channel);
 
     /**
-      * Returns the unique device ID of phone, for example, the IMEI for
-      * GSM and the MEID for CDMA phones. Return null if device ID is not available.
-      *
-      * <p>Requires Permission:
-      *   {@link android.Manifest.permission#READ_PHONE_STATE READ_PHONE_STATE}
-      */
-    String getDeviceId();
+     * Transmit an APDU to the ICC card over a logical channel.
+     *
+     * Input parameters equivalent to TS 27.007 AT+CGLA command.
+     *
+     * @param channel is the channel id to be closed as retruned by a
+     *            successful iccOpenLogicalChannel.
+     * @param cla Class of the APDU command.
+     * @param instruction Instruction of the APDU command.
+     * @param p1 P1 value of the APDU command.
+     * @param p2 P2 value of the APDU command.
+     * @param p3 P3 value of the APDU command. If p3 is negative a 4 byte APDU
+     *            is sent to the SIM.
+     * @param data Data to be sent with the APDU.
+     * @return The APDU response from the ICC card with the status appended at
+     *            the end. If an error occurs, an empty string is returned.
+     */
+    String iccTransmitApduLogicalChannelUsingSlot(int slotId, int channel, int cla, int instruction,
+            int p1, int p2, int p3, String data);
+    
+    String iccTransmitApduBasicChannelUsingSlot(int slotId, int cla, int command, int p1, int p2,
+                int p3, String data);
+
+    void setPolicyDataEnableForSubscriber(int subId, boolean enabled);
 }

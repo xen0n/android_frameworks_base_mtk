@@ -16,6 +16,8 @@
 
 package com.android.internal.telephony;
 
+import android.os.Message;
+
 /**
  * Interface used to retrieve various phone-related subscriber information.
  *
@@ -27,16 +29,11 @@ interface IPhoneSubInfo {
      */
     String getDeviceId();
 
-     /**
-     * Retrieves the unique Network Access ID
-     */
-    String getNaiForSubscriber(int subId);
-
     /**
-     * Retrieves the unique device ID of a phone for the device, e.g., IMEI
+     * Retrieves the unique device ID of a subId for the device, e.g., IMEI
      * for GSM phones.
      */
-    String getDeviceIdForPhone(int phoneId);
+    String getDeviceIdForSubscriber(int subId);
 
     /**
      * Retrieves the IMEI.
@@ -53,7 +50,7 @@ interface IPhoneSubInfo {
      * Retrieves the software version number of a subId for the device, e.g., IMEI/SV
      * for GSM phones.
      */
-    String getDeviceSvnUsingSubId(int subId);
+    String getDeviceSvnForSubscriber(int subId);
 
     /**
      * Retrieves the unique sbuscriber ID, e.g., IMSI for GSM phones.
@@ -200,4 +197,67 @@ interface IPhoneSubInfo {
      * @return challenge response
      */
     String getIccSimChallengeResponse(int subId, int appType, String data);
+
+    /**
+     * Returns the GBA bootstrapping parameters (GBABP) that was loaded from the ISIM.
+     * @return GBA bootstrapping parameters or null if not present or not loaded
+     */
+    String getIsimGbabp();
+
+    /**
+     * Set the GBA bootstrapping parameters (GBABP) value into the ISIM.
+     * @param gbabp a GBA bootstrapping parameters value in String type
+     * @param onComplete
+     *        onComplete.obj will be an AsyncResult
+     *        ((AsyncResult)onComplete.obj).exception == null on success
+     *        ((AsyncResult)onComplete.obj).exception != null on fail
+     */
+    void setIsimGbabp(String gbabp, in Message onComplete);
+
+    /**
+     * Returns the USIM Service Table (UST) that was loaded from the USIM.
+     * @param service service index on UST
+     * @return  the indicated service is supported or not
+     */
+    boolean getUsimService(int service);
+
+    /**
+     * Returns the GBA bootstrapping parameters (GBABP) that was loaded from the USIM.
+     * @return GBA bootstrapping parameters or null if not present or not loaded
+     */
+    String getUsimGbabp();
+
+    /**
+     * Set the GBA bootstrapping parameters (GBABP) value into the USIM.
+     * @param gbabp a GBA bootstrapping parameters value in String type
+     * @param onComplete
+     *        onComplete.obj will be an AsyncResult
+     *        ((AsyncResult)onComplete.obj).exception == null on success
+     *        ((AsyncResult)onComplete.obj).exception != null on fail
+     */
+    void setUsimGbabp(String gbabp, in Message onComplete);
+
+    /**
+     * Returns the Public Service Identity of the SM-SC (PSISMSC) that was loaded from the ISIM.
+     * @return PSISMSC or null if not present or not loaded
+     */
+    byte[] getIsimPsismsc();
+
+    /**
+     * Returns the Public Service Identity of the SM-SC (PSISMSC) that was loaded from the USIM.
+     * @return PSISMSC or null if not present or not loaded
+     */
+    byte[] getUsimPsismsc();
+
+    /**
+     * Returns the Short message parameter (SMSP) that was loaded from the USIM.
+     * @return PSISMSC or null if not present or not loaded
+     */
+    byte[] getUsimSmsp();
+
+    /**
+     * Returns the MCC+MNC length that was loaded from the USIM.
+     * @return MCC+MNC length or 0 if not present or not loaded
+     */
+    int getMncLength();
 }

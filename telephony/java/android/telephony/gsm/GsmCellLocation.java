@@ -19,18 +19,27 @@ package android.telephony.gsm;
 import android.os.Bundle;
 import android.telephony.CellLocation;
 
+import android.util.Log;
+import com.android.internal.telephony.PhoneConstants;
+
 /**
  * Represents the cell location on a GSM phone.
  */
 public class GsmCellLocation extends CellLocation {
-    private int mLac = -1;
-    private int mCid = -1;
-    private int mPsc = -1;
+   static final String TAG = "GsmCellLocation";
+
+    private int mLac;
+    private int mCid;
+    private int mPsc;
 
     /**
-     * Empty constructor.
+     * Empty constructor.  Initializes the LAC and CID to -1.
      */
     public GsmCellLocation() {
+        mLac = -1;
+        mCid = -1;
+        mPsc = -1;
+        mType = PhoneConstants.PHONE_TYPE_GSM;
     }
 
     /**
@@ -40,6 +49,7 @@ public class GsmCellLocation extends CellLocation {
         mLac = bundle.getInt("lac", mLac);
         mCid = bundle.getInt("cid", mCid);
         mPsc = bundle.getInt("psc", mPsc);
+        mType = PhoneConstants.PHONE_TYPE_GSM;
     }
 
     /**
@@ -139,6 +149,8 @@ public class GsmCellLocation extends CellLocation {
         m.putInt("lac", mLac);
         m.putInt("cid", mCid);
         m.putInt("psc", mPsc);
+        m.putInt("type", mType);
+        Log.d(TAG, "fillInNotifierBundle:" + m.toString());
     }
 
     /**

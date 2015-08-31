@@ -26,13 +26,11 @@ import com.android.ims.internal.IImsEcbm;
 import com.android.ims.internal.IImsUt;
 import com.android.ims.internal.IImsConfig;
 
-import android.os.Message;
-
 /**
  * {@hide}
  */
 interface IImsService {
-    int open(int phoneId, int serviceClass, in PendingIntent incomingCallIntent,
+    int open(int serviceClass, in PendingIntent incomingCallIntent,
             in IImsRegistrationListener listener);
     void close(int serviceId);
     boolean isConnected(int serviceId, int serviceType, int callType);
@@ -53,26 +51,32 @@ interface IImsService {
     /**
      * Config interface to get/set IMS service/capability parameters.
      */
-    IImsConfig getConfigInterface(int phoneId);
+    IImsConfig getConfigInterface();
 
     /**
      * Used for turning on IMS when its in OFF state.
      */
-    void turnOnIms(int phoneId);
+    void turnOnIms();
 
     /**
      * Used for turning off IMS when its in ON state.
      * When IMS is OFF, device will behave as CSFB'ed.
      */
-    void turnOffIms(int phoneId);
+    void turnOffIms();
+
 
     /**
      * ECBM interface for Emergency Callback mode mechanism.
      */
     IImsEcbm getEcbmInterface(int serviceId);
 
-   /**
-     * Used to set current TTY Mode.
+    /**
+     * call interface for allowing/refusing the incoming call indication send to App.
      */
-    void setUiTTYMode(int serviceId, int uiTtyMode, in Message onComplete);
+    void SetCallIndication(String callId, int seqNum, boolean isAllow);
+
+    /**
+     * Use to query ims enable/disable status.
+     */
+    int getImsState();
 }
