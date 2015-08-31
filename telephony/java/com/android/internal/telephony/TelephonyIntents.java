@@ -403,6 +403,35 @@ public class TelephonyIntents {
             = "android.intent.action.ACTION_DEFAULT_SMS_SUBSCRIPTION_CHANGED";
 
     /**
+     * Broadcast Action: The subscription activation/deactivation request result.
+     *  This has the following extra values:</p>
+     * <ul>
+     *   <li><em>operationResult</em> - A int, result of subscription
+     *   activation/deactivation request.</li>
+     *   <li><em>NewSubState</em> - A int, new sub state(activate/deactivate) clients
+     *   trying to set for the current subscription.</li>
+     * </ul>
+     */
+    public static final String ACTION_SUBSCRIPTION_SET_UICC_RESULT
+            = "org.codeaurora.intent.action.ACTION_SUBSCRIPTION_SET_UICC_RESULT";
+
+    public static final String EXTRA_RESULT  = "operationResult";
+    public static final String EXTRA_NEW_SUB_STATE = "newSubState";
+    /**
+     * To notify the capability switch procedure start
+     */
+    // FIXME maybe these should be removed - sprout only
+    public static final String ACTION_CAPABILITY_SWITCH_START
+            = "com.android.phone.ACTION_CAPABILITY_SWITCH_START";
+
+    /**
+     * To notify the capability switch procedure end
+     */
+    // FIXME maybe these should be removed - sprout only
+    public static final String ACTION_CAPABILITY_SWITCH_DONE
+            = "com.android.phone.ACTION_CAPABILITY_SWITCH_DONE";
+
+    /**
      * Broadcast Action: An attempt to set phone RAT family has changed.  This has the following
      * extra values:</p>
      * <ul>

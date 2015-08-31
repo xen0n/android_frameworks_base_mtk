@@ -188,6 +188,9 @@ public class PhoneConstants {
 
     public static final String SUB_SETTING  = "subSettings";
 
+    public static final int SUCCESS = 0;
+    public static final int FAILURE = 1;
+
     public static final int SUB1 = 0;
     public static final int SUB2 = 1;
     public static final int SUB3 = 2;
@@ -201,6 +204,10 @@ public class PhoneConstants {
     public static final int SIM_ID_3 = 2;
     public static final int SIM_ID_4 = 3;
 
+    public static final int PHONE_ID1 = 0;
+    public static final int PHONE_ID2 = 1;
+    public static final int PHONE_ID3 = 2;
+
     // ICC SIM Application Types
     // TODO: Replace the IccCardApplicationStatus.AppType enums with these constants
     public static final int APPTYPE_UNKNOWN = 0;
@@ -213,11 +220,22 @@ public class PhoneConstants {
     public enum CardUnavailableReason {
         REASON_CARD_REMOVED,
         REASON_RADIO_UNAVAILABLE,
-        REASON_SIM_REFRESH_RESET
+        REASON_SIM_REFRESH_RESET,
+        REASON_APM_SIM_POWER_DOWN
     };
 
     // Initial MTU value.
     public static final int UNSET_MTU = 0;
+
+    /**
+     * Values for the adb property "persist.radio.ims.audio.output"
+     */
+    public static final int IMS_AUDIO_OUTPUT_ENABLE_SPEAKER = 0;
+    public static final int IMS_AUDIO_OUTPUT_DISABLE_SPEAKER = 1;
+    public static final int IMS_AUDIO_OUTPUT_DEFAULT = IMS_AUDIO_OUTPUT_ENABLE_SPEAKER;
+    //FIXME maybe this shouldn't be here - sprout only
+    public static final int CAPABILITY_3G   = 1;
+
     // Added by M begin
     // MVNO-API START
     public static final String MVNO_TYPE_NONE = "";
