@@ -582,6 +582,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
     boolean mHomePressed;
     boolean mHomeConsumed;
     boolean mHomeDoubleTapPending;
+    boolean mMxHomeSwingUpPending;
     boolean mMenuPressed;
     boolean mAppSwitchLongPressed;
     Intent mHomeIntent;
@@ -953,6 +954,34 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                 EdgeGesturePosition position, int flags) {
             WindowState target = null;
 
+            Slog.i(TAG,
+                    "onEdgeGestureActivation: position="
+                    + position
+                    + " mxcircle="
+                    + shouldExhibitMxCircleBehavior()
+                    + " mMxHomeSwingUpPending="
+                    + mMxHomeSwingUpPending
+                    + " mNavBarOnBottom="
+                    + mNavigationBarOnBottom
+                    + " mNavBarLeftInLandscape="
+                    + mNavigationBarLeftInLandscape
+                    + " mLastEdgePos=" + mLastEdgePositions
+                    + " mLastMxEdgePos=" + mLastMxEdgePositions
+                    + " touchX=" + touchX
+                    + " touchY=" + touchY
+                    );
+            if (shouldExhibitMxCircleBehavior() && mMxHomeSwingUpPending) {
+                consumeMxHomeSwingUp();
+                restoreListenerState();
+                return;
+            }
+
+            if (!checkEdgeEnabled(mLastEdgePositions, position)) {
+                Slog.d(TAG, "onEdgeGestureActivation: not enabling non-MX edge events");
+                restoreListenerState();
+                return;
+            }
+
             if (position == EdgeGesturePosition.TOP) {
                 target = mStatusBar;
             } else if (position == EdgeGesturePosition.BOTTOM  && mNavigationBarOnBottom) {
@@ -975,11 +1004,13 @@ public class PhoneWindowManager implements WindowManagerPolicy {
     };
     private EdgeGestureManager mEdgeGestureManager = null;
     private int mLastEdgePositions = 0;
+    private int mLastMxEdgePositions = 0;
     private boolean mEdgeListenerActivated = false;
     private boolean mUsingEdgeGestureServiceForGestures = false;
 
     private void updateEdgeGestureListenerState() {
         int flags = 0;
+        int mxFlags = 0;
         if (mUsingEdgeGestureServiceForGestures) {
             flags = EdgeServiceConstants.LONG_LIVING | EdgeServiceConstants.UNRESTRICTED;
             if (mStatusBar != null && !mStatusBar.isVisibleLw()) {
@@ -994,16 +1025,31 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                     flags |= EdgeGesturePosition.RIGHT.FLAG;
                 }
             }
+            if (shouldExhibitMxCircleBehavior()) {
+                // XXX: we can't easily determine which edge to enable in the
+                // first place, so just hope the user won't be quickly
+                // performing a home click and edge gesture in quick succession.
+                mxFlags |= EdgeGesturePosition.BOTTOM.FLAG;
+                mxFlags |= EdgeGesturePosition.TOP.FLAG;
+                mxFlags |= EdgeGesturePosition.LEFT.FLAG;
+                mxFlags |= EdgeGesturePosition.RIGHT.FLAG;
+            }
         }
         if (mEdgeListenerActivated) {
             mEdgeGestureActivationListener.restoreListenerState();
             mEdgeListenerActivated = false;
         }
-        if (flags != mLastEdgePositions) {
+        if (flags != mLastEdgePositions || mxFlags != mLastMxEdgePositions) {
             mEdgeGestureManager.updateEdgeGestureActivationListener(mEdgeGestureActivationListener,
-                    flags);
+                    flags | mxFlags);
             mLastEdgePositions = flags;
+            mLastMxEdgePositions = mxFlags;
         }
+    }
+
+    private boolean checkEdgeEnabled(final int edgePositionFlags, final EdgeGesturePosition position) {
+        Slog.d(TAG, "checkEdgeEnabled: " + edgePositionFlags + " vs " + position.FLAG);
+        return (edgePositionFlags & position.FLAG) != 0;
     }
 
     IStatusBarService getStatusBarService() {
@@ -1450,6 +1496,19 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         launchHomeFromHotKey();
     }
 
+    private void consumeMxHomeSwingUp() {
+        mMxHomeSwingUpPending = false;
+
+        // also remove double tap timeout
+        mHomeDoubleTapPending = false;
+        mHandler.removeCallbacks(mHomeDoubleTapTimeoutRunnable);
+
+        Slog.i(TAG, "consumeMxHomeSwingUp");
+        // trigger back key press with haptic feedback
+        performHapticFeedbackLw(null, HapticFeedbackConstants.VIRTUAL_KEY, false);
+        triggerVirtualKeypress(KeyEvent.KEYCODE_BACK);
+    }
+
     private void triggerVirtualKeypress(final int keyCode) {
         InputManager im = InputManager.getInstance();
         long now = SystemClock.uptimeMillis();
@@ -1507,6 +1566,19 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         public void run() {
             if (mHomeDoubleTapPending) {
                 mHomeDoubleTapPending = false;
+                mMxHomeSwingUpPending = false;
+                handleShortPressOnHome();
+            }
+        }
+    };
+
+    // Meizu MX: handle swing-up of circle
+    private final Runnable mMxHomeSwingUpTimeoutRunnable = new Runnable() {
+        @Override
+        public void run() {
+            if (mMxHomeSwingUpPending) {
+                mHomeDoubleTapPending = false;
+                mMxHomeSwingUpPending = false;
                 handleShortPressOnHome();
             }
         }
@@ -1649,18 +1721,62 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                 new SystemGesturesPointerEventListener.Callbacks() {
                     @Override
                     public void onSwipeFromTop() {
+                        Slog.i(TAG,
+                                "onSwipeFromTop: mxcircle="
+                                + shouldExhibitMxCircleBehavior()
+                                + " mMxHomeSwingUpPending="
+                                + mMxHomeSwingUpPending
+                                + " mNavigationBarOnBottom="
+                                + mNavigationBarOnBottom
+                                );
+                        if (shouldExhibitMxCircleBehavior() && mMxHomeSwingUpPending &&
+                                !mNavigationBarOnBottom) {
+                            consumeMxHomeSwingUp();
+                            return;
+                        }
+
                         if (mStatusBar != null) {
                             requestTransientBars(mStatusBar);
                         }
                     }
                     @Override
                     public void onSwipeFromBottom() {
+                        Slog.i(TAG,
+                                "onSwipeFromBottom: mxcircle="
+                                + shouldExhibitMxCircleBehavior()
+                                + " mMxHomeSwingUpPending="
+                                + mMxHomeSwingUpPending
+                                + " mNavigationBarOnBottom="
+                                + mNavigationBarOnBottom
+                                );
+                        if (shouldExhibitMxCircleBehavior() && mMxHomeSwingUpPending &&
+                                mNavigationBarOnBottom) {
+                            consumeMxHomeSwingUp();
+                            return;
+                        }
+
                         if (mNavigationBar != null && mNavigationBarOnBottom) {
                             requestTransientBars(mNavigationBar);
                         }
                     }
                     @Override
                     public void onSwipeFromRight() {
+                        Slog.i(TAG,
+                                "onSwipeFromRight: mxcircle="
+                                + shouldExhibitMxCircleBehavior()
+                                + " mMxHomeSwingUpPending="
+                                + mMxHomeSwingUpPending
+                                + " mNavigationBarOnBottom="
+                                + mNavigationBarOnBottom
+                                + " mNavigationBarLeftInLandscape="
+                                + mNavigationBarLeftInLandscape
+                                );
+                        if (shouldExhibitMxCircleBehavior() && mMxHomeSwingUpPending &&
+                                !mNavigationBarLeftInLandscape) {
+                            consumeMxHomeSwingUp();
+                            return;
+                        }
+
                         if (mNavigationBar != null && !mNavigationBarOnBottom &&
                                 !mNavigationBarLeftInLandscape) {
                             requestTransientBars(mNavigationBar);
@@ -1668,6 +1784,22 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                     }
                     @Override
                     public void onSwipeFromLeft() {
+                        Slog.i(TAG,
+                                "onSwipeFromLeft: mxcircle="
+                                + shouldExhibitMxCircleBehavior()
+                                + " mMxHomeSwingUpPending="
+                                + mMxHomeSwingUpPending
+                                + " mNavigationBarOnBottom="
+                                + mNavigationBarOnBottom
+                                + " mNavigationBarLeftInLandscape="
+                                + mNavigationBarLeftInLandscape
+                                );
+                        if (shouldExhibitMxCircleBehavior() && mMxHomeSwingUpPending &&
+                                mNavigationBarLeftInLandscape) {
+                            consumeMxHomeSwingUp();
+                            return;
+                        }
+
                         if (mNavigationBar != null && !mNavigationBarOnBottom &&
                                 mNavigationBarLeftInLandscape) {
                             requestTransientBars(mNavigationBar);
@@ -2029,6 +2161,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                 }
                 updateEdgeGestureListenerState();
             }
+            Slog.i(TAG, "useEdgeService=" + useEdgeService + " mUsingEdgeGestureServiceForGestures=" + mUsingEdgeGestureServiceForGestures);
 
             boolean devForceNavbar = Settings.Secure.getIntForUser(resolver,
                     Settings.Secure.DEV_FORCE_SHOW_NAVBAR, 0, UserHandle.USER_CURRENT) == 1;
@@ -3057,6 +3190,23 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                     mHomeDoubleTapPending = true;
                     mHandler.postDelayed(mHomeDoubleTapTimeoutRunnable,
                             ViewConfiguration.getDoubleTapTimeout());
+
+                    // don't return immediately if MX circle behavior is also
+                    // requested.
+                    if (!shouldExhibitMxCircleBehavior()) {
+                        return -1;
+                    }
+                }
+
+                // And if Meizu-specific home behavior is possible.
+                if (shouldExhibitMxCircleBehavior()) {
+                    mHandler.removeCallbacks(mMxHomeSwingUpTimeoutRunnable);
+                    mMxHomeSwingUpPending = true;
+
+                    // just reuse the double tap timeout for now
+                    final int timeout = ViewConfiguration.getDoubleTapTimeout();
+                    Slog.i(TAG, "mMxHomeSwingUpPending; timeout=" + timeout);
+                    mHandler.postDelayed(mMxHomeSwingUpTimeoutRunnable, timeout);
                     return -1;
                 }
 
@@ -3090,6 +3240,11 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                 if (mHomeDoubleTapPending) {
                     mHomeDoubleTapPending = false;
                     mHandler.removeCallbacks(mHomeDoubleTapTimeoutRunnable);
+
+                    // also remove the swing up timeout
+                    mMxHomeSwingUpPending = false;
+                    mHandler.removeCallbacks(mMxHomeSwingUpTimeoutRunnable);
+
                     performKeyAction(mDoubleTapOnHomeBehavior);
                     mHomeConsumed = mDoubleTapOnHomeBehavior != KEY_ACTION_SLEEP;
                 } else if (mLongPressOnHomeBehavior == KEY_ACTION_APP_SWITCH
@@ -7273,6 +7428,12 @@ public class PhoneWindowManager implements WindowManagerPolicy {
 
     public boolean needsNavigationBar() {
         return mHasNavigationBar;
+    }
+
+    // Whether to enable Meizu MX circle behavior?
+    private boolean shouldExhibitMxCircleBehavior() {
+        // TODO: make this configurable via expanded desktop settings
+        return !hasNavigationBar();
     }
 
     @Override
