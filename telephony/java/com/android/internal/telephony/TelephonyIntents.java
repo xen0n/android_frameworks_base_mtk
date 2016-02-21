@@ -679,4 +679,17 @@ public class TelephonyIntents {
     public static final String ACTION_RADIO_AVAILABLE = "android.intent.action.RADIO_AVAILABLE";
     public static final String EXTRA_RADIO_AVAILABLE_STATE = "radio_available_state";
     /// @}
+
+    /**
+    * To identify CDMA card  type.
+    * For CT request, this type used for CDMA modem identify card type and report to framework
+    * <P>Type: int</P>
+    */
+    public static final String ACTION_CDMA_CARD_TYPE = "android.intent.action.CDMA_CARD_TYPE";
+    public static final String INTENT_KEY_CDMA_CARD_TYPE = "cdma_card_type";
+    public static final String INTENT_KEY_CDMA_CARD_NEW = "cdma_card_new";
+
+    public static final String ACTION_CDMA_CARD_IMSI = "android.intent.action.CDMA_CARD_IMSI";
+    public static final String INTENT_KEY_CDMA_CARD_CSIM_IMSI = "cdma_card_csim_imsi";
+    public static final String INTENT_KEY_CDMA_CARD_USIM_IMSI = "cdma_card_usim_imsi";
 }

@@ -110,4 +110,23 @@ public class IccCardConstants {
             }
         }
     }
+
+    // MTK CDMA
+    /**
+     * This card type is report by CDMA(VIA) modem.
+     * for CT requset to detect card type then give a warning
+     */
+    public enum CardType {
+        UNKNOW_CARD,        //card is present, but can't detect type
+        PIN_LOCK_CARD,      // this card need PIN
+        SIM_CARD,           //ICC structure, non CT SIM card
+        UIM_CARD,           //ICC structure, non CT UIM card
+        UIM_SIM_CARD,       //ICC structure, non CT dual mode card
+        CT_UIM_CARD,        //ICC structure, CT UIM card
+        CT_UIM_SIM_CARD,    //ICC structure, CT dual mode card
+        NOT_CDMA_UICC_CARD, //UICC structure, non CT, non CDMA UICC card
+        CDMA_UICC_CARD,     //UICC structure, non CT, CDMA UICC card
+        CT_3G_UICC_CARD,    //UICC structure, CT 3G NFC card
+        CT_4G_UICC_CARD;    //UICC structure, CT 4G UICC card
+    }
 }
