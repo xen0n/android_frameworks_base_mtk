@@ -565,6 +565,30 @@ cat include/telephony/ril.h | \
     static final int RIL_REQUEST_SET_IMS_CALL_STATUS = (RIL_REQUEST_MTK_BASE + 113);
     /* M: call control part end */
 
+    /// M: IMS ViLTe feature. @{
+    static final int RIL_REQUEST_SET_VT_CAPABILITY = (RIL_REQUEST_MTK_BASE + 114);
+    static final int RIL_REQUEST_VT_DIAL = (RIL_REQUEST_MTK_BASE + 115);
+    static final int RIL_REQUEST_VOICE_ACCEPT = (RIL_REQUEST_MTK_BASE + 116);
+    /// @}
+
+    //C2K SVLTE remote SIM access
+    static final int RIL_REQUEST_CONFIG_MODEM_STATUS = (RIL_REQUEST_MTK_BASE + 117);
+
+    // M: [C2K] MD IRAT RIL requests.
+    static final int RIL_REQUEST_SET_ACTIVE_PS_SLOT = RIL_REQUEST_MTK_BASE + 118;
+    static final int RIL_REQUEST_CONFIRM_INTER_3GPP_IRAT_CHANGE = RIL_REQUEST_MTK_BASE + 119;
+
+    /// M: [C2K][SVLTE] Set the SVLTE RAT mode. @{
+    static final int RIL_REQUEST_SET_SVLTE_RAT_MODE = (RIL_REQUEST_MTK_BASE + 120);
+    /// M: [C2K][SVLTE] Set the SVLTE RAT mode. @}
+
+    // M: [C2K] AP IRAT RIL requests.
+    static final int RIL_REQUEST_TRIGGER_LTE_BG_SEARCH = (RIL_REQUEST_MTK_BASE + 121);
+
+    /// M: IMS VoLTe conference dial feature. @{
+    static final int RIL_REQUEST_CONFERENCE_DIAL = (RIL_REQUEST_MTK_BASE + 122);
+    /// @}
+
     static final int RIL_REQUEST_EVDO_SUPPORT_BASE = 2100;
     static final int RIL_REQUEST_RADIO_POWER_CARD_SWITCH = (RIL_REQUEST_EVDO_SUPPORT_BASE + 0);
 
@@ -662,6 +686,20 @@ cat include/telephony/ril.h | \
     static final int RIL_UNSOL_RESPONSE_MO_CALL_STATE_CHANGED = (RIL_UNSOL_MTK_BASE + 57);
 //}
 
+    static final int RIL_UNSOL_ABNORMAL_EVENT = (RIL_UNSOL_MTK_BASE + 58);
+
+    static final int RIL_UNSOL_CDMA_CARD_TYPE = (RIL_UNSOL_MTK_BASE + 59);
+
+    /// M: [C2K] MD IRAT RIL URCs.
+    static final int RIL_UNSOL_INTER_3GPP_IRAT_STATE_CHANGE = RIL_UNSOL_MTK_BASE + 60;
+
+    // M: [C2K] AP IRAT RIL URCs.
+    static final int RIL_UNSOL_LTE_BG_SEARCH_STATUS = (RIL_UNSOL_MTK_BASE + 61);
+
+    /// M: [C2K][IR][MD-IRAT] URC for GMSS RAT changed. @{
+    static final int RIL_UNSOL_GMSS_RAT_CHANGED = (RIL_UNSOL_MTK_BASE + 62);
+    /// M: [C2K][IR][MD-IRAT] URC for GMSS RAT changed. @}
+
     /* M: Add C2K proprietary start */
     static final int RIL_REQUEST_C2K_BASE = 4000;
     static final int RIL_REQUEST_GET_NITZ_TIME = (RIL_REQUEST_C2K_BASE + 0);
@@ -678,12 +716,23 @@ cat include/telephony/ril.h | \
     static final int RIL_REQUEST_AGPS_SET_MPC_IPPORT = (RIL_REQUEST_C2K_BASE + 11);
     static final int RIL_REQUEST_AGPS_GET_MPC_IPPORT = (RIL_REQUEST_C2K_BASE + 12);
     static final int RIL_REQUEST_SET_MEID = (RIL_REQUEST_C2K_BASE + 13);
-    static final int RIL_REQUEST_SET_REG_RESUME = (RIL_REQUEST_C2K_BASE + 14);
-    static final int RIL_REQUEST_ENABLE_REG_PAUSE = (RIL_REQUEST_C2K_BASE + 15);
+    /// M: [C2K][IR] Support SVLTE IR feature. @{
+    static final int RIL_REQUEST_RESUME_REGISTRATION_CDMA = (RIL_REQUEST_C2K_BASE + 14);
+    static final int RIL_REQUEST_SET_REG_SUSPEND_ENABLED_CDMA = (RIL_REQUEST_C2K_BASE + 15);
+    /// M: [C2K][IR] Support SVLTE IR feature. @}
     static final int RIL_REQUEST_SET_ETS_DEV = (RIL_REQUEST_C2K_BASE + 16);
     static final int RIL_REQUEST_WRITE_MDN = (RIL_REQUEST_C2K_BASE + 17);
     static final int RIL_REQUEST_SET_VIA_TRM = (RIL_REQUEST_C2K_BASE + 18);
     static final int RIL_REQUEST_SET_ARSI_THRESHOLD = (RIL_REQUEST_C2K_BASE + 19);
+
+    // [C2K] [AP IRAT] RIL request.
+    static final int RIL_REQUEST_SET_LTE_EARFCN_ENABLED = (RIL_REQUEST_C2K_BASE + 20);
+    // [C2K] [SVLTE] C2K SVLTE CDMA RAT control.
+    static final int RIL_REQUEST_CONFIG_IRAT_MODE = (RIL_REQUEST_C2K_BASE + 21);
+    /* M: SVLTE UTK part start */
+    static final int RIL_REQUEST_QUERY_UTK_MENU_FROM_MD = (RIL_REQUEST_C2K_BASE + 22);
+    /* M: SVLTE UTK part end */
+
 
     static final int RIL_UNSOL_C2K_BASE = 5000;
     static final int RIL_UNSOL_CDMA_CALL_ACCEPTED = (RIL_UNSOL_C2K_BASE + 0);
@@ -692,7 +741,15 @@ cat include/telephony/ril.h | \
     static final int RIL_UNSOL_UTK_EVENT_NOTIFY = (RIL_UNSOL_C2K_BASE + 3);
     static final int RIL_UNSOL_VIA_GPS_EVENT = (RIL_UNSOL_C2K_BASE + 4);
     static final int RIL_UNSOL_VIA_NETWORK_TYPE_CHANGE = (RIL_UNSOL_C2K_BASE + 5);
-    static final int RIL_UNSOL_VIA_PLMN_CHANGE_REG_PAUSE = (RIL_UNSOL_C2K_BASE + 6);
+    /// M: [C2K][IR] Support SVLTE IR feature. @{
+    static final int RIL_UNSOL_CDMA_PLMN_CHANGED = (RIL_UNSOL_C2K_BASE + 6);
+    /// M: [C2K][IR] Support SVLTE IR feature. @}
     static final int RIL_UNSOL_VIA_INVALID_SIM_DETECTED = (RIL_UNSOL_C2K_BASE + 7);
+    /// M: For c2k eng mode
+    static final int RIL_UNSOL_ENG_MODE_NETWORK_INFO = (RIL_UNSOL_C2K_BASE + 8);
+    // M: [C2K] for ps type changed.
+    static final int RIL_UNSOL_RESPONSE_DATA_NETWORK_TYPE_CHANGED = (RIL_UNSOL_C2K_BASE + 9);
+    // [C2K] [AP IRAT] URCs
+    static final int RIL_UNSOL_LTE_EARFCN_INFO = (RIL_UNSOL_C2K_BASE + 10);
     /* M: Add C2K proprietary end */
 }
