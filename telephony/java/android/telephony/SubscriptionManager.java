@@ -97,6 +97,20 @@ public class SubscriptionManager {
     /** @hide */
     public static final int MAX_SUBSCRIPTION_ID_VALUE = DEFAULT_SUBSCRIPTION_ID - 1;
 
+    /**
+     * M: Indicates the specified phone identifier for LteDcPhone.
+     * TODO: Assign phone id to phone count, to avoid affect TelephonyRegistry's phone index
+     * based notify mechanism.
+     */
+    /** @hide */
+    public static final int LTE_DC_PHONE_ID = TelephonyManager.getDefault().getPhoneCount();
+
+    /**
+     * M: Indicates the specified subscription identifier for LteDcPhone.
+     */
+    /** @hide */
+    public static final int LTE_DC_SUBSCRIPTION_ID = -999;
+
     /** @hide */
     public static final Uri CONTENT_URI = Uri.parse("content://telephony/siminfo");
 
