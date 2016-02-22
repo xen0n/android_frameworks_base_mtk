@@ -72,6 +72,11 @@ public class SignalStrength implements Parcelable {
     private int mLteCqi;
     private int mTdScdmaRscp;
 
+    // MTK
+    private int mGsmRssiQdbm; // This valus is GSM 3G rssi value
+    private int mGsmRscpQdbm; // This valus is GSM 3G rscp value
+    private int mGsmEcn0Qdbm; // This valus is GSM 3G ecn0 value
+
     private boolean isGsm; // This value is set by the ServiceStateTracker onSignalStrengthResult
 
     /**
@@ -152,6 +157,25 @@ public class SignalStrength implements Parcelable {
         initialize(gsmSignalStrength, gsmBitErrorRate, cdmaDbm, cdmaEcio,
                 evdoDbm, evdoEcio, evdoSnr, lteSignalStrength, lteRsrp,
                 lteRsrq, lteRssnr, lteCqi, gsmFlag);
+    }
+
+    // MTK
+    /**
+     * Constructor
+     *
+     * @hide
+     */
+    public SignalStrength(int gsmSignalStrength, int gsmBitErrorRate,
+            int cdmaDbm, int cdmaEcio,
+            int evdoDbm, int evdoEcio, int evdoSnr,
+            int lteSignalStrength, int lteRsrp, int lteRsrq, int lteRssnr, int lteCqi,
+            boolean gsmFlag, int gsmRssiQdbm, int gsmRscpQdbm, int gsmEcn0Qdbm) {
+        initialize(gsmSignalStrength, gsmBitErrorRate, cdmaDbm, cdmaEcio,
+                evdoDbm, evdoEcio, evdoSnr, lteSignalStrength, lteRsrp,
+                lteRsrq, lteRssnr, lteCqi, gsmFlag);
+        mGsmRssiQdbm = gsmRssiQdbm;
+        mGsmRscpQdbm = gsmRscpQdbm;
+        mGsmEcn0Qdbm = gsmEcn0Qdbm;
     }
 
     /**
@@ -277,6 +301,11 @@ public class SignalStrength implements Parcelable {
         mLteCqi = s.mLteCqi;
         mTdScdmaRscp = s.mTdScdmaRscp;
         isGsm = s.isGsm;
+
+        // MTK
+        mGsmRssiQdbm = s.mGsmRssiQdbm;
+        mGsmRscpQdbm = s.mGsmRscpQdbm;
+        mGsmEcn0Qdbm = s.mGsmEcn0Qdbm;
     }
 
     /**
@@ -301,6 +330,11 @@ public class SignalStrength implements Parcelable {
         mLteCqi = in.readInt();
         mTdScdmaRscp = in.readInt();
         isGsm = (in.readInt() != 0);
+
+        // MTK
+        mGsmRssiQdbm = in.readInt();
+        mGsmRscpQdbm = in.readInt();
+        mGsmEcn0Qdbm = in.readInt();
     }
 
     /**
@@ -327,6 +361,12 @@ public class SignalStrength implements Parcelable {
         ss.mLteRssnr = in.readInt();
         ss.mLteCqi = in.readInt();
         ss.mTdScdmaRscp = in.readInt();
+
+        // MTK
+        ss.mGsmRssiQdbm = in.readInt();
+        ss.mGsmRscpQdbm = in.readInt();
+        ss.mGsmEcn0Qdbm = in.readInt();
+
         return ss;
     }
 
@@ -348,6 +388,11 @@ public class SignalStrength implements Parcelable {
         out.writeInt(mLteCqi);
         out.writeInt(mTdScdmaRscp);
         out.writeInt(isGsm ? 1 : 0);
+
+        // MTK
+        out.writeInt(mGsmRssiQdbm);
+        out.writeInt(mGsmRscpQdbm);
+        out.writeInt(mGsmEcn0Qdbm);
     }
 
     /**
@@ -618,7 +663,11 @@ public class SignalStrength implements Parcelable {
         int gsmSignalStrength = getGsmSignalStrength();
         int asu = (gsmSignalStrength == 99 ? -1 : gsmSignalStrength);
         if (asu != -1) {
-            dBm = -113 + (2 * asu);
+            if (mGsmRscpQdbm < 0) {
+                dBm = mGsmRscpQdbm / 4; //Return raw value for 3G Network
+            } else {
+                dBm = -113 + (2 * asu);
+            }
         } else {
             dBm = -1;
         }
@@ -639,11 +688,28 @@ public class SignalStrength implements Parcelable {
         // signal, its better to show 0 bars to the user in such cases.
         // asu = 99 is a special case, where the signal strength is unknown.
         int asu = getGsmSignalStrength();
-        if (asu <= 2 || asu == 99) level = SIGNAL_STRENGTH_NONE_OR_UNKNOWN;
-        else if (asu >= 12) level = SIGNAL_STRENGTH_GREAT;
-        else if (asu >= 8)  level = SIGNAL_STRENGTH_GOOD;
-        else if (asu >= 5)  level = SIGNAL_STRENGTH_MODERATE;
-        else level = SIGNAL_STRENGTH_POOR;
+
+        // MTK
+        if (mGsmRscpQdbm < 0) {
+            // 3G network
+            if (asu <= 5 || asu == 99) {
+                level = SignalStrength.SIGNAL_STRENGTH_NONE_OR_UNKNOWN;
+            } else if (asu >= 15) {
+                level = SignalStrength.SIGNAL_STRENGTH_GREAT;
+            } else if (asu >= 12) {
+                level = SignalStrength.SIGNAL_STRENGTH_GOOD;
+            } else if (asu >= 9) {
+                level = SignalStrength.SIGNAL_STRENGTH_MODERATE;
+            } else {
+                level = SignalStrength.SIGNAL_STRENGTH_POOR;
+            }
+        } else {
+            if (asu <= 2 || asu == 99) level = SIGNAL_STRENGTH_NONE_OR_UNKNOWN;
+            else if (asu >= 12) level = SIGNAL_STRENGTH_GREAT;
+            else if (asu >= 8)  level = SIGNAL_STRENGTH_GOOD;
+            else if (asu >= 5)  level = SIGNAL_STRENGTH_MODERATE;
+            else level = SIGNAL_STRENGTH_POOR;
+        }
         if (DBG) log("getGsmLevel=" + level);
         return level;
     }
@@ -1016,7 +1082,8 @@ public class SignalStrength implements Parcelable {
                 && mLteRssnr == s.mLteRssnr
                 && mLteCqi == s.mLteCqi
                 && mTdScdmaRscp == s.mTdScdmaRscp
-                && isGsm == s.isGsm);
+                && isGsm == s.isGsm
+                && mGsmRscpQdbm == s.mGsmRscpQdbm);  // MTK
     }
 
     /**
@@ -1038,7 +1105,11 @@ public class SignalStrength implements Parcelable {
                 + " " + mLteRssnr
                 + " " + mLteCqi
                 + " " + mTdScdmaRscp
-                + " " + (isGsm ? "gsm|lte" : "cdma"));
+                + " " + (isGsm ? "gsm|lte" : "cdma")
+                // MTK
+                + " " + mGsmRssiQdbm
+                + " " + mGsmRscpQdbm
+                + " " + mGsmEcn0Qdbm);
     }
 
     /**
@@ -1062,6 +1133,11 @@ public class SignalStrength implements Parcelable {
         mLteCqi = m.getInt("LteCqi");
         mTdScdmaRscp = m.getInt("TdScdma");
         isGsm = m.getBoolean("isGsm");
+
+        // MTK
+        mGsmRssiQdbm = m.getInt("RssiQdbm");
+        mGsmRscpQdbm = m.getInt("RscpQdbm");
+        mGsmEcn0Qdbm = m.getInt("Ecn0Qdbm");
     }
 
     /**
@@ -1085,6 +1161,11 @@ public class SignalStrength implements Parcelable {
         m.putInt("LteCqi", mLteCqi);
         m.putInt("TdScdma", mTdScdmaRscp);
         m.putBoolean("isGsm", Boolean.valueOf(isGsm));
+
+        // MTK
+        m.putInt("RssiQdbm", mGsmRssiQdbm);
+        m.putInt("RscpQdbm", mGsmRscpQdbm);
+        m.putInt("Ecn0Qdbm", mGsmEcn0Qdbm);
     }
 
     /**
@@ -1093,4 +1174,230 @@ public class SignalStrength implements Parcelable {
     private static void log(String s) {
         Rlog.w(LOG_TAG, s);
     }
+
+    // MTK
+    /**
+     * Get the GSM 3G rssi value
+     *
+     * @hide
+     */
+    public int getGsmRssiQdbm() {
+        return this.mGsmRssiQdbm;
+    }
+
+    /**
+     * Get the GSM 3G rscp value
+     *
+     * @hide
+     */
+    public int getGsmRscpQdbm() {
+        return this.mGsmRscpQdbm;
+    }
+
+    /**
+     * Get the GSM 3G ecn0 value
+     *
+     * @hide
+     */
+    public int getGsmEcn0Qdbm() {
+        return this.mGsmEcn0Qdbm;
+    }
+
+    /**
+     * Get the GSM Signal Strength Dbm value
+     *
+     * @hide
+     * @internal
+     */
+    public int getGsmSignalStrengthDbm() {
+        int dBm = -1;
+        int gsmSignalStrength = this.mGsmSignalStrength;
+        int asu = (gsmSignalStrength == 99 ? -1 : gsmSignalStrength);
+
+        if (asu != -1) {
+            dBm = -113 + (2 * asu);
+        }
+        return dBm;
+    }
+
+    /**
+     * Test whether two objects hold the same data values or both are null
+     *
+     * @param a first obj
+     * @param b second obj
+     * @return true if two objects equal or both are null
+     * @hide
+     */
+    private static boolean equalsHandlesNulls(Object a, Object b) {
+        return (a == null) ? (b == null) : a.equals(b);
+    }
+
+    //MTE-START [ALPS01200757]
+    /**
+     * check if current network is LTE
+     *
+     * if we camp on LTE network then the least fiele of +ECSQ will be <AcT=7>.
+     * It will be set to mEvdoDbm in getSingnalStrength() of ril_nw.c
+     * And change value to "-7" by SingnalStrength.validateInput() when GsmSST receive signal update.
+     * @return true when camp on LTE network
+     *
+     * @hide
+     * @internal
+     */
+    private boolean isCampOnLte() {
+        return (isGsm() && (mEvdoDbm == -7)) ;
+    }
+    //MTE-END [ALPS01200757]
+
+    ///M:For svlte signal strength. @{
+    /**
+     * Set the GSM Signal Strength.
+     *
+     * @param gsmSignalStrength The GSM GSM Signal Strength
+     * @hide
+     */
+    public void setGsmSignalStrength(int gsmSignalStrength) {
+        mGsmSignalStrength = gsmSignalStrength;
+    }
+
+    /**
+     * Set the GSM Bit Error Rate.
+     *
+     * @param gsmBitErrorRate the GSM Bit Error Rate
+     * @hide
+     */
+    public void setGsmBitErrorRate(int gsmBitErrorRate) {
+        mGsmBitErrorRate = gsmBitErrorRate;
+    }
+
+    /**
+     * Set the CDMA Dbm.
+     *
+     * @param cdmaDbm the CDMA Dbm
+     * @hide
+     */
+    public void setCdmaDbm(int cdmaDbm) {
+        mCdmaDbm = cdmaDbm;
+    }
+
+    /**
+     * Set the CDMA Ecio.
+     *
+     * @param cdmaEcio the CDMA Ecio
+     * @hide
+     */
+    public void setCdmaEcio(int cdmaEcio) {
+        mCdmaEcio = cdmaEcio;
+    }
+
+    /**
+     * Set the EVDO Dbm.
+     *
+     * @param evdoDbm the EVDO Dbm
+     * @hide
+     */
+    public void setEvdoDbm(int evdoDbm) {
+        mEvdoDbm = evdoDbm;
+    }
+
+    /**
+     * Set the EVDO Ecio.
+     *
+     * @param evdoEcio the EVDO Ecio
+     * @hide
+     */
+    public void setEvdoEcio(int evdoEcio) {
+        mEvdoEcio = evdoEcio;
+    }
+
+    /**
+     * Set the EVDO Snr.
+     *
+     * @param evdoSnr the EVDO Snr
+     * @hide
+     */
+    public void setEvdoSnr(int evdoSnr) {
+        mEvdoSnr = evdoSnr;
+    }
+
+    /**
+     * Set the LTE Signal Strength.
+     *
+     * @param lteSignalStrength the LTE Signal Strength
+     * @hide
+     */
+    public void setLteSignalStrength(int lteSignalStrength) {
+        mLteSignalStrength = lteSignalStrength;
+    }
+
+    /**
+     * Set the LTE Rsrp.
+     *
+     * @param lteRsrp the LTE Rsrp
+     * @hide
+     */
+    public void setLteRsrp(int lteRsrp) {
+        mLteRsrp = lteRsrp;
+    }
+
+    /**
+     * Set the LTE Rsrq.
+     *
+     * @param lteRsrq the LTE Rsrq
+     * @hide
+     */
+    public void setLteRsrq(int lteRsrq) {
+        mLteRsrq = lteRsrq;
+    }
+
+    /**
+     * Set the LTE Rssnr.
+     *
+     * @param lteRssnr the LTE Rssnr
+     * @hide
+     */
+    public void setLteRssnr(int lteRssnr) {
+        mLteRssnr = lteRssnr;
+    }
+
+    /**
+     * Set the LTE Cqi.
+     *
+     * @param lteCqi the LTE Cqi
+     * @hide
+     */
+    public void setLteCqi(int lteCqi) {
+        mLteCqi = lteCqi;
+    }
+
+    /**
+     * Set the GSM rssi Qdbm.
+     *
+     * @param gsmRssiQdbm the GSM rssi Qdbm
+     * @hide
+     */
+    public void setGsmRssiQdbm(int gsmRssiQdbm) {
+        mGsmRssiQdbm = gsmRssiQdbm;
+    }
+
+    /**
+     * Get the GSM Rscp Qdbm.
+     *
+     * @param gsmRscpQdbm the GSM Rscp Qdbm
+     * @hide
+     */
+    public void setGsmRscpQdbm(int gsmRscpQdbm) {
+        mGsmRscpQdbm = gsmRscpQdbm;
+    }
+
+    /**
+     * Set the Gsm Ecn0 Qdbm.
+     *
+     * @param gsmEcn0Qdbm the Gsm Ecn0 Qdbm
+     * @hide
+     */
+    public void setGsmEcn0Qdbm(int gsmEcn0Qdbm) {
+        mGsmEcn0Qdbm = gsmEcn0Qdbm;
+    }
+    ///M:For svlte signal strength.@}
 }
