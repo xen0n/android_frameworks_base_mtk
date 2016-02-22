@@ -1330,6 +1330,13 @@ public final class Settings {
             MOVED_TO_GLOBAL.add(Settings.Global.SMS_SHORT_CODES_UPDATE_METADATA_URL);
             MOVED_TO_GLOBAL.add(Settings.Global.CERT_PIN_UPDATE_CONTENT_URL);
             MOVED_TO_GLOBAL.add(Settings.Global.CERT_PIN_UPDATE_METADATA_URL);
+
+            // MTK
+            MOVED_TO_GLOBAL.add(Settings.Global.AUTO_TIME_GPS);
+            MOVED_TO_GLOBAL.add(Settings.Global.ACM_ENABLED);
+            MOVED_TO_SECURE_THEN_GLOBAL.add(Settings.Global.DATA_ROAMING_2);
+            MOVED_TO_SECURE_THEN_GLOBAL.add(Settings.Global.DATA_ROAMING_3);
+            MOVED_TO_SECURE_THEN_GLOBAL.add(Settings.Global.DATA_ROAMING_4);
         }
 
         /**
@@ -3924,6 +3931,802 @@ public final class Settings {
          */
         public static final String HEADSET_CONNECT_PLAYER = "headset_connect_player";
 
+        // MTK
+        /**
+         * M: For VoiceUnlock
+         * Null if unlock command hasn't been set.
+         * @hide
+         */
+        public static final String VOICE_UNLOCK_SCREEN = "voice_unlock_screen";
+
+        /**
+         * M: For VoiceUnlock
+         * Voice command 1 will launch with app after unlock screen.
+         * @hide
+         */
+        public static final String VOICE_UNLOCK_AND_LAUNCH1 = "voice_unlock_and_launch1";
+
+        /**
+         * M: For VoiceUnlock
+         * Voice command 2 will launch with app after unlock screen.
+         * @hide
+         */
+        public static final String VOICE_UNLOCK_AND_LAUNCH2 = "voice_unlock_and_launch2";
+
+        /**
+         * M: For VoiceUnlock
+         * Voice command 3 will launch with app after unlock screen.
+         * @hide
+         */
+        public static final String VOICE_UNLOCK_AND_LAUNCH3 = "voice_unlock_and_launch3";
+
+        /**
+         * M: Whether MediatekDM boot start is enabled.
+         * @hide
+         */
+        public static final String DM_BOOT_START_ENABLE_KEY = "dm_boot_start_enable_key";
+
+        /**
+         * Boot up select mode for GEMINI power on
+         *
+         * @hide
+         */
+        public static final String BOOT_UP_SELECT_MODE = "boot_up_select_mode";
+
+        /**
+         * Boot up select mode for GEMINI power on default value.
+         * @hide
+         */
+        public static final int BOOT_UP_SELECT_MODE_DEFAULT = 0;
+
+        /**
+         * Multi SIM mode setting.
+         * @hide
+         * @internal
+         */
+        public static final String MSIM_MODE_SETTING = "msim_mode_setting";
+
+        /**
+         * Roaming reminder mode
+         * @hide
+         */
+        public static final String ROAMING_REMINDER_MODE_SETTING = "roaming_reminder_mode_setting";
+
+        /**
+         * flag to indicate whether need to popup the roaming indication
+         * @hide
+         */
+        public static final String ROAMING_INDICATION_NEEDED = "roaming_indication_needed";
+
+        /**
+         * GPRS connection default sim
+         * @hide
+         * @internal
+         */
+        public static final String GPRS_CONNECTION_SIM_SETTING = "gprs_connection_sim_setting";
+
+        /**
+         * voice call reject mode
+         * @hide
+         */
+        public static final String VOICE_CALL_REJECT_MODE = "voice_call_reject_mode";
+        /**
+         * video call reject mode<br/>
+         * <b>Values: modeID</b><br/>
+         *
+         * @hide
+         */
+        public static final String VT_CALL_REJECT_MODE = "vt_call_reject_mode";
+
+        /**
+         * GPRS connection setting as never
+         * @hide
+         * @internal
+         */
+        public static final long GPRS_CONNECTION_SIM_SETTING_NEVER = 0;
+
+        /**
+         * voice call default sim
+         * @hide
+         * @internal
+         */
+        public static final String VOICE_CALL_SIM_SETTING = "voice_call_sim_setting";
+
+        /**
+         * Voice call setting as Internet call
+         * @hide
+         * @internal
+         */
+        public static final long VOICE_CALL_SIM_SETTING_INTERNET = -2;
+
+        /**
+         * Voice call and sms setting as always ask
+         * @hide
+         * @internal
+         */
+        public static final long DEFAULT_SIM_SETTING_ALWAYS_ASK = -1;
+
+
+        /**
+         * sms setting as auto select
+         * @hide
+         * @internal
+         */
+        public static final long SMS_SIM_SETTING_AUTO = -3;
+
+
+        /**
+         * Default SIM not set
+         * @hide
+         */
+        public static final long DEFAULT_SIM_NOT_SET = -5;
+
+        /**
+         * Default SIM not set of int
+         * @hide
+         */
+        public static final int DEFAULT_SIM_NOT_SET_INT = -5;
+
+        /**
+         * SMS default siM
+         * @hide
+         * @internal
+         */
+        public static final String SMS_SIM_SETTING = "sms_sim_setting";
+
+        /**
+         * video call default siM
+         * @hide
+         */
+        public static final String VIDEO_CALL_SIM_SETTING = "video_call_sim_setting";
+
+        /**
+         * sip call default sim
+         * @hide
+         */
+        public static final String SIP_CALL_SIM_SETTING = "sip_call_sim_setting";
+
+        /**
+         * Internet call state
+         * @hide
+         * @internal
+         */
+        public static final String ENABLE_INTERNET_CALL = "enable_internet_call_value";
+
+        /**
+         * GPRS connection mode
+         * @hide
+         */
+        public static final String GPRS_CONNECTION_SETTING = "gprs_connection_setting";
+
+        /**
+         * GPRS connection mode default value.
+         * @hide
+         */
+        public static final int GPRS_CONNECTION_SETTING_DEFAULT = DEFAULT_SIM_NOT_SET_INT + 1;
+
+        /**
+         * GPRS transfer type
+         * @hide
+         */
+        public static final String GPRS_TRANSFER_SETTING = "gprs_transfer_setting";
+
+        /**
+         * GPRS transfer type default value.
+         * @hide
+         */
+        public static final int GPRS_TRANSFER_SETTING_DEFAULT = 1;
+
+        /**
+         * GPRS always mode
+         * @hide
+         */
+        public static final String GPRS_CONNECTION_MODE_SIM1 = "gprs_connection_mode_setting_sim1";
+
+        /**
+         *@hide
+         */
+        public static final String GPRS_CONNECTION_MODE_SIM2 = "gprs_connection_mode_setting_sim2";
+
+        /**
+         * GPRS transfer type default value.
+         * @hide
+         */
+        public static final int GPRS_CONNECTION_MODE_SETTING_DEFAULT = -1;
+
+        /**
+         * Whether wifi settings will connect to access point automatically
+         * @hide
+         */
+        public static final String WIFI_CONNECT_AP_TYPE = "wifi_ap_connect_type";
+
+        /**
+         * wifi settings will connect to access point automatically
+         * @hide
+         */
+        public static final int WIFI_CONNECT_AP_TYPE_AUTO = 0;
+
+        /**
+         * user need to connect to access point manually
+         * @hide
+         */
+        public static final int WIFI_CONNECT_AP_TYPE_MANUL = 1;
+
+        /**
+         * Whether wpa_supplicant will connect to access point automatically
+         * @hide
+         */
+        public static final String WIFI_CONNECT_TYPE = "wifi_connect_type";
+
+        /**
+         * wpa_supplicant will connect to access point automatically
+         * @hide
+         */
+        public static final int WIFI_CONNECT_TYPE_AUTO = 0;
+
+        /**
+         * user need to connect to access point manually
+         *
+         * @hide
+         */
+        public static final int WIFI_CONNECT_TYPE_MANUL = 1;
+
+        /**
+         * user will be notified when wifi is available
+         * @hide
+         */
+        public static final int WIFI_CONNECT_TYPE_ASK = 2;
+
+        /**
+         * Whether connect to access point need reminder
+         * @hide
+         */
+        public static final String WIFI_CONNECT_REMINDER = "wifi_connect_reminder";
+
+        /**
+         * Enable or disable hotspot auto disable function
+         * @hide
+         * @internal
+         */
+        public static final String WIFI_HOTSPOT_AUTO_DISABLE = "wifi_hotspot_auto_disable";
+
+        /**
+         * Disable hotspot auto disable function
+         *
+         * @hide
+         */
+        public static final int WIFI_HOTSPOT_AUTO_DISABLE_OFF = 0;
+
+        /**
+         * Disable hotspot when idle for 5 mins
+         * @hide
+         * @internal
+         */
+        public static final int WIFI_HOTSPOT_AUTO_DISABLE_FOR_FIVE_MINS = 1;
+
+        /**
+         * Disable hotspot when idle for 10 mins
+         * @hide
+         */
+        public static final int WIFI_HOTSPOT_AUTO_DISABLE_FOR_TEN_MINS = 2;
+
+        /**
+         * The max client num of hotspot
+         * @hide
+         * @internal
+         */
+        public static final String WIFI_HOTSPOT_MAX_CLIENT_NUM = "wifi_hotspot_max_client_num";
+
+        /**
+         * Wifi hotspot default client number
+         * @hide
+         * @internal
+         */
+        public static final int WIFI_HOTSPOT_DEFAULT_CLIENT_NUM = 5;
+
+        /**
+         * The max client num of hotspot
+         * @hide
+         */
+        public static final String WIFI_HOTSPOT_START_TIME = "wifi_hotspot_start_time";
+
+        /**
+         * Wifi hotspot default start time
+         * @hide
+         */
+        public static final int WIFI_HOTSPOT_DEFAULT_START_TIME = 0;
+
+        /**
+         * Whether select an access point to connect among SSID automatically
+         * @hide
+         */
+        public static final String WIFI_SELECT_SSID_TYPE = "wifi_select_ssid_type";
+
+        /**
+         * select an access point to connect automatically
+         * @hide
+         */
+        public static final int WIFI_SELECT_SSID_AUTO = 0;
+
+        /**
+         * select an access point to connect manually
+         * @hide
+         */
+        public static final int WIFI_SELECT_SSID_MANUL = 1;
+
+        /**
+         * user will be notified when other access point's signal is better
+         * @hide
+         */
+        public static final int WIFI_SELECT_SSID_ASK = 2;
+
+        /**
+         * The type of how each AP accessing its priority values
+         *
+         * @hide
+         */
+        public static final String WIFI_PRIORITY_TYPE = "wifi_priority_type";
+
+        /**
+         * The type of how each AP accessing its priority
+         * @hide
+         */
+        public static final int WIFI_PRIORITY_TYPE_DEFAULT = 0;
+
+        /**
+         * The type of how each AP accessing its priority
+         * @hide
+         */
+        public static final int WIFI_PRIORITY_TYPE_MAMUAL = 1;
+
+        /**
+         * The type of USB tethering
+         * @hide
+         * @internal
+         */
+        public static final String USB_TETHERING_TYPE = "usb_tethering_type";
+
+        /**
+         * The type of USB tethering values: Windows
+         * @hide
+         * @internal
+         */
+        public static final int USB_TETHERING_TYPE_DEFAULT = 0;
+
+        /**
+         * The type of USB tethering values: Linux / Mac OS
+         * @hide
+         */
+        public static final int USB_TETHERING_TYPE_EEM = 1;
+
+        /**
+         * The type of dialog sequence for keyguard and STK dialogs
+         * @hide
+         */
+        public static final String DIALOG_SEQUENCE_SETTINGS = "dialog_sequence_settings";
+
+        /**
+         * The dialog sequence default value
+         * @hide
+         */
+        public static final int DIALOG_SEQUENCE_DEFAULT = 0;
+
+        /**
+         * The KEYGUARD dialog is showing
+         * @hide
+         */
+        public static final int DIALOG_SEQUENCE_KEYGUARD = 1;
+
+        /**
+         * The STK dialog is showing
+         * @hide
+         */
+        public static final int DIALOG_SEQUENCE_STK = 2;
+
+        /**
+         * Persistent store for the system-wide default voice call ringtone URI.
+         * @hide
+         */
+        public static final String VIDEO_CALL = "video_call";
+
+        /**
+         * Persistent store for the system-wide default sip call ringtone URI.
+         * @hide
+         *
+         */
+        public static final String SIP_CALL = "sip_call";
+
+        /**
+         * A Uri that will point to the current default video call ringtone at any given time.
+         * @hide
+         * @internal
+         */
+        public static final Uri DEFAULT_VIDEO_CALL_URI = getUriFor(VIDEO_CALL);
+
+        /**
+         * A Uri that will point to the current default sip call ringtone at any given time.
+         * @hide
+         *
+         */
+        public static final Uri DEFAULT_SIP_CALL_URI = getUriFor(SIP_CALL);
+
+        /**
+         * Value to specify if the user prefers the date, time and time zone to be automatically fetched from the GPS
+         * @hide
+         */
+        public static final String AUTO_TIME_GPS = Global.AUTO_TIME_GPS;
+
+        /**
+         * Control what when rotation happens , what activity will be launched
+         * in Launcher, If None, no activity will be launched, or will be
+         * activity name to be launched.
+         *
+         * @hide
+         */
+        public static final String LANDSCAPE_LAUNCHER = "landscape_launcher";
+
+        /**
+         * restore this vaule for MTK shut animation
+         * @hide
+         */
+        public static final String ACCELEROMETER_ROTATION_RESTORE = "accelerometer_rotation_restore";
+
+        /**
+         * Which web search engine user has selected, QuickSearchBox and Browser
+         * and any other application using web search activity will be forced to
+         * use this web search engine. The value is a String, representing the
+         * name of a web search activity.
+         *
+         * @hide
+         */
+        public static final String SELECT_WEB_SEARCH_ENGINE = "select_web_search_engine";
+
+        /**
+         * package name for power off alarm, when system boot up from power off
+         * alarm use this to identify the package
+         *
+         * @hide
+         */
+        public static final String POWER_OFF_ALARM_PACKAGE_NAME = "power_off_alarm_package_name";
+
+       /**
+         * package name for background power saving
+         * alarm use this to identify feature on/off
+         *
+         * @hide
+         */
+        public static final String BG_POWER_SAVING_ENABLE = "background_power_saving_enable";
+
+        /**
+         * Enable fast boot? true = yes false = no
+         *
+         * @hide
+         */
+        public static final String IPO_SETTING = "ipo_setting";
+
+        /**
+         * Record sim lock state
+         *
+         * @hide
+         */
+        public static final String SIM_LOCK_STATE_SETTING = "sim_lock_state_setting";
+
+        /**
+         * log2server show dialog(true) or not(false) when exp happened.
+         *
+         * @hide
+         */
+        public static final String LOG2SERVER_DIALOG_SHOW = "log2server_dialog_show";
+
+        /**
+         * Streaming parameter name
+         *
+         * @hide
+         */
+        public static final String MTK_RTSP_NAME = "mtk_rtsp_name";
+
+        /**
+         * Streaming parameter proxy
+         *
+         * @hide
+         */
+        public static final String MTK_RTSP_TO_PROXY = "mtk_rtsp_to_proxy";
+
+        /**
+         * Streaming parameter nefinfo
+         *
+         * @hide
+         */
+        public static final String MTK_RTSP_NETINFO = "mtk_rtsp_netinfo";
+
+        /**
+         * Streaming parameter napid
+         *
+         * @hide
+         */
+        public static final String MTK_RTSP_TO_NAPID = "mtk_rtsp_to_napid";
+
+        /**
+         * Streaming parameter max_udp_port
+         *
+         * @hide
+         */
+        public static final String MTK_RTSP_MAX_UDP_PORT = "mtk_rtsp_max_udp_port";
+
+        /**
+         * Streaming parameter min_udp_port
+         *
+         * @hide
+         */
+        public static final String MTK_RTSP_MIN_UDP_PORT = "mtk_rtsp_min_udp_port";
+
+        /**
+         * Whether show Quick Start Gide in Home screen's main screen
+         *
+         * @hide
+         */
+        public static final String SHOW_QSG = "show_quick_start_guide";
+
+        /**
+         * Record font scale from EM
+         *
+         * @hide
+         */
+        public static final String FONT_SCALE_SMALL = "settings_fontsize_small";
+
+        /**
+         * @hide
+         */
+        public static final String FONT_SCALE_LARGE = "settings_fontsize_large";
+
+        /**
+         * @hide
+         */
+        public static final String FONT_SCALE_EXTRALARGE = "settings_fontsize_extralarge";
+
+        /**
+         * IVSR setting (enable/disable)
+         *
+         * @hide
+         */
+        public static final String IVSR_SETTING = "ivsr_setting";
+
+        /**
+         * @hide
+         */
+        public static final long IVSR_SETTING_DISABLE = 0;
+
+        /**
+         * @hide
+         */
+        public static final long IVSR_SETTING_ENABLE = 1;
+
+        /**
+         * CRO setting (enable/disable)
+         *
+         * @hide
+         */
+        public static final String CRO_SETTING = "cro_setting";
+
+        /**
+         * @hide
+         */
+        public static final long CRO_SETTING_DISABLE = 0;
+
+        /**
+         * @hide
+         */
+        public static final long CRO_SETTING_ENABLE = 1;
+
+        /**
+         * HOO setting (enable/disable)
+         *
+         * @hide
+         */
+        public static final String HOO_SETTING = "hoo_setting";
+
+        /**
+         * @hide
+         */
+        public static final long HOO_SETTING_DISABLE = 0;
+
+        /**
+         * @hide
+         */
+        public static final long HOO_SETTING_ENABLE = 1;
+
+        /**
+         * M: ipv6 tethering feature
+         *
+         * @hide
+         */
+        public static final String TETHER_IPV6_FEATURE = "tether_ipv6_feature";
+
+        /**
+         * M: CT main sim selection
+         * @hide
+         */
+        public static final String CT_MAIN_SIM_SELECTION = "ct_main_sim_selection";
+
+        /**
+         * M: CT time display mode
+         * @hide
+         */
+        public static final String CT_TIME_DISPLAY_MODE = "ct_time_display_mode";
+
+        /**
+         * International Dialing
+         *
+         * @hide
+         */
+        public static final String INTER_DIAL_SETTING = "international_dialing_key";
+
+        /**
+         * CT eSurfing dialing
+         * @hide
+         */
+        public static final String ESURFING_DIALING = "ct_e_surfing_dialing_key";
+
+
+        /**
+         * M: current wallpaper name, such as Default, Video Wallpaper or Black
+         * Hole (For Live Wallpaper, just show its name).
+         *
+         * @hide
+         */
+        public static final String CURRENT_WALLPAPER_NAME = "current_wallpaper_component_name";
+
+        /**
+         * Control whether to enable automatic eco backlight mode.
+         * @hide
+         */
+        public static final String SCREEN_BRIGHTNESS_ECO_MODE = "screen_brightness_eco_mode";
+
+        /**
+         * SCREEN_ECO_BRIGHTNESS_MODE value for automatic eco backlight mode.
+         * @hide
+         */
+        public static final int SCREEN_BRIGHTNESS_ECO_MODE_AUTOMATIC = 2;
+
+        /**
+         * M: HDMI enabled or not
+         *
+         * 0 - disabled
+         * 1 - enabled
+         *
+         * @hide
+         */
+        public static final String HDMI_ENABLE_STATUS = "hdmi_enable_status";
+
+        /**
+         * M: HDMI video resolution config
+         *
+         * @hide
+         */
+        public static final String HDMI_VIDEO_RESOLUTION = "hdmi_video_resolution";
+
+        /**
+         * M: HDMI video scale config
+         *
+         * @hide
+         */
+        public static final String HDMI_VIDEO_SCALE = "hdmi_video_scale";
+
+        /**
+         * M: HDMI color space config
+         *
+         * @hide
+         */
+        public static final String HDMI_COLOR_SPACE = "hdmi_color_space";
+
+        /**
+         * M: HDMI deep color config
+         *
+         * @hide
+         */
+        public static final String HDMI_DEEP_COLOR = "hdmi_deep_color";
+
+        /**
+         * M: HDMI cable plugged flag
+         *
+         * @hide
+         */
+        public static final String HDMI_CABLE_PLUGGED = "hdmi_cable_plugged";
+
+        /**
+         * M: HDMI audio output mode
+         *
+         * @hide
+         */
+        public static final String HDMI_AUDIO_OUTPUT_MODE = "hdmi_audio_output_mode";
+        /// @}
+
+        /**
+         * M: Whether it is the right hand mouse?
+         * false = yes
+         * true = no
+         * @hide
+         */
+        public static final String CHANGE_POINTER_PRIMARY_KEY = "change_pointer_primary_key";
+
+        /**
+         * M: Pointer double click speed setting.
+         * This is an integer value in a range between 200 and 900
+         * default is 300
+         * @hide
+         * @internal
+         */
+        public static final String POINTER_DOUBLE_CLICK_SPEED = "pointer_double_click_speed";
+
+        /**
+         * M: the last GPRS SIM ID before turned off due to WIFI disconnected for OP01
+         *
+         * @hide
+         */
+         public static final String LAST_SIMID_BEFORE_WIFI_DISCONNECTED = "last_simid_before_wifi_disconnected";
+
+         /**
+          * M: saving data usage
+          * * @hide
+          */
+         public static final String DATA_SAVING_KEY = "data_saving_key";
+
+         /**
+          * M: Voice wake up base command string.
+          *
+          * @hide
+          */
+         public static String BASE_VOICE_WAKEUP_COMMAND_KEY = "voice_wakeup_app";
+
+         /**
+          * M: Set Voice command value.
+          *
+          * @param baseCommand     Base command string for voice feature
+          * @param commandId       Command id for voice command
+          * @param launchApp       Launch app for voice command
+          *
+          * @hide
+          */
+         public static void setVoiceCommandValue(ContentResolver cr, String baseCommand,
+                 int commandId, String launchApp) {
+             Settings.System.putString(cr,
+                     baseCommand + commandId, launchApp);
+         }
+
+         /**
+          * M: Get Voice command value.
+          *
+          * @param baseCommand     Base command string for voice feature
+          * @param commandId       Command id for voice command
+          *
+          * @hide
+          */
+         public static String getVoiceCommandValue(ContentResolver cr, String baseCommand,
+                 int commandId) {
+             return Settings.System.getString(cr, baseCommand + commandId);
+         }
+
+         /**
+          * M: Voice wake up mode.
+          * 0: voice unlock
+          * 1: voice wakeup do not recognize people mode
+          * 2: voice wakeup recognize people mode
+          *
+          * @hide
+          * @internal
+          */
+         public static String VOICE_WAKEUP_MODE = "voice_wakeup_mode";
+
+         /**
+          * M: Voice wake up command status
+          * 0: no voice wake up command and unchecked
+          * 1: has voice wake up command and unchecked
+          * 2: has voice wake up command and checked
+          *
+          * @hide
+          * @internal
+          */
+         public static String VOICE_WAKEUP_COMMAND_STATUS = "voice_wakeup_command_status";
     }
 
     /**
@@ -8510,6 +9313,306 @@ public final class Settings {
           * @hide
           */
         public static final String TUNE_AWAY_STATUS = "tune_away";
+
+        // MTK
+        /**
+         *  M: ALPS00574277, save bluetooth state.
+         *
+         * @hide
+         */
+        public static final String BLUETOOTH_STATE = "bluetooth_state";
+
+       /**
+        * Whether NFC is enabled/disabled
+        *
+        * @hide
+        */
+       public static final String NFC_ON = "nfc_on";
+
+       /**
+         * Whether NFC Multi-SE is enabled/disabled
+         *
+         * @hide
+         */
+        public static final String NFC_MULTISE_ON = "nfc_multise_on";
+
+       /**
+         * NFC Multi-SE list
+         * String separated by ",", for example, "SIM1,SIM2,OFF"
+         * @hide
+         */
+        public static final String NFC_MULTISE_LIST = "nfc_multise_list";
+
+       /**
+         * Active NFC Multi-SE
+         * String contained in Multi-SE list, for example, "SIM1" or "OFF"
+         * @hide
+         */
+        public static final String NFC_MULTISE_ACTIVE = "nfc_multise_active";
+
+        /**
+         * Previous NFC Multi-SE
+         * String contained in Multi-SE list, for example, "SIM1"
+         * @hide
+         */
+        public static final String NFC_MULTISE_PREVIOUS = "nfc_multise_previous";
+
+       /**
+         * Whether NFC SEAPI is at transaction state
+         *
+         * @hide
+         */
+        public static final String NFC_MULTISE_IN_TRANSACTION = "nfc_multise_in_transation";
+
+       /**
+        * Whether NFC Multi-SE is at switching state
+        *
+        * @hide
+        */
+       public static final String NFC_MULTISE_IN_SWITCHING = "nfc_multise_in_switching";
+
+       /**
+        * Whether NFC SEAPI is for CMCC version
+        *
+        * @hide
+        */
+       public static final String NFC_SEAPI_SUPPORT_CMCC = "nfc_seapi_support_cmcc";
+
+       /**
+        * Whether NFC SEAPI is for CMCC version
+        *
+        * @hide
+        */
+       public static final String NFC_SEAPI_CMCC_SIM = "nfc_seapi_cmcc_sim";
+
+       /**
+         * Whether NFC HCE is enabled/disabled
+         * 0=disabled. 1=enabled.
+         * @hide
+         * @internal
+         */
+       public static final String NFC_HCE_ON = "nfc_hce_on";
+
+       /**
+         * Wifi display display toast time
+         *
+         * @hide
+         */
+       public static final String WIFI_DISPLAY_DISPLAY_TOAST_TIME = "wifi_display_display_toast_time";
+
+       /**
+         * Wifi display display notification time
+         *
+         * @hide
+         */
+       public static final String WIFI_DISPLAY_DISPLAY_NOTIFICATION_TIME = "wifi_display_notification_time";
+
+       /**
+         * Wifi display quality enhancement on
+         *
+         * @hide
+         */
+       public static final String WIFI_DISPLAY_QE_ON = "wifi_display_qe_on";
+
+       /**
+         * Wifi display display SQC info on
+         *
+         * @hide
+         */
+       public static final String WIFI_DISPLAY_SQC_INFO_ON = "wifi_display_sqc_info_on";
+
+
+       /**
+        * Whether enable WFD auto channel selection
+        *
+        * @hide
+        */
+       public static final String WIFI_DISPLAY_AUTO_CHANNEL_SELECTION = "wifi_display_auto_channel_selection";
+
+       /**
+        * Wifi display max resolution
+        * The value is an integer.
+        * 0: 720p,30fps  (Menu is disabled)
+        * 1: 1080p,30fps (Menu is disabled)
+        * 2: 1080p,30fps (Menu is enabled)
+        * 3: 720p,30fps (Menu is enabled)
+        * @hide
+        */
+       public static final String WIFI_DISPLAY_RESOLUTION = "wifi_display_max_resolution";
+
+       /**
+        * Whether enable WFD change resolution remind idalog
+        *
+        * @hide
+        */
+       public static final String WIFI_DISPLAY_RESOLUTION_DONOT_REMIND = "wifi_display_change_resolution_remind";
+
+       /**
+        * Whether show WFD audio output path do not remind again
+        *
+        * @hide
+        */
+       public static final String WIFI_DISPLAY_SOUND_PATH_DONOT_REMIND = "wifi_display_sound_path_do_not_remind";
+
+       /**
+        * Wifi Display power saving option
+        * 0: off, 1: dim, 2: dim and show image, 3: no power saving
+        * @hide
+        */
+       public static final String WIFI_DISPLAY_POWER_SAVING_OPTION = "wifi_display_power_saving_option";
+
+
+       /**
+        * Wifi Display power saving delay
+        * The unit is second
+        * @hide
+        */
+       public static final String WIFI_DISPLAY_POWER_SAVING_DELAY = "wifi_display_power_saving_delay";
+
+       /**
+        * Wifi Display security option
+        * 0: TV shows black. 1: TV shows prohibitted image
+        * @hide
+        */
+       public static final String WIFI_DISPLAY_SECURITY_OPTION = "wifi_display_security_option";
+
+       /**
+        * Enable Wifi Display latency profiling panel
+        *
+        * @hide
+        */
+       public static final String WIFI_DISPLAY_LATENCY_PROFILING = "wifi_display_latency_profiling";
+
+       /**
+       * Wifi Display chosen capability,"%s,%s,%s" means (Audio, video, resolution/frame rate)
+       *
+       * @hide
+       */
+       public static final String WIFI_DISPLAY_CHOSEN_CAPABILITY = "wifi_display_chosen_capability";
+
+       /**
+        * Wifi Display WIFI info, "%d,%d,%d,%d" means (channdlID, AP num, Score, Data rate)
+        *
+        * @hide
+        */
+       public static final String WIFI_DISPLAY_WIFI_INFO = "wifi_display_wifi_info";
+
+       /**
+        * Wifi Display WFD Latency, "%d,%d,%d" means(avg latency, max latency, timestamp)
+        *
+        * @hide
+        */
+       public static final String WIFI_DISPLAY_WFD_LATENCY = "wifi_display_wfd_latency";
+
+       /**
+        * Whether to enable passpoint
+        * @hide
+        */
+       public static final String WIFI_PASSPOINT_ON = "wifi_passpoint_on";
+
+       /**
+        * Whether to enable AutoJoin
+        * @hide
+        */
+       public static final String WIFI_AUTO_JOIN = "wifi_auto_join";
+
+      /**
+       * M: Radio network selection - wifi rove in threshold value.
+       * @hide
+       */
+      public static final String RNS_WIFI_ROVE_IN_RSSI = "rns_wifi_rove_in_rssi";
+
+      /**
+       * M: Radio network selection - wifi rove out threshold value.
+       * @hide
+       */
+      public static final String RNS_WIFI_ROVE_OUT_RSSI = "rns_wifi_rove_out_rssi";
+
+        /**
+         * World phone auto network select mode
+         *
+         * @hide
+         */
+        public static final String WORLD_PHONE_AUTO_SELECT_MODE =
+                "world_phone_auto_select_mode";
+
+        /**
+         * World phone fdd modem standby timer
+         *
+         * @hide
+         */
+        public static final String WORLD_PHONE_FDD_MODEM_TIMER =
+                "world_phone_fdd_modem_timer";
+
+        /**
+         * Whether data roaming is enabled for sim2
+         *
+         * @hide
+         */
+        public static final String DATA_ROAMING_2 = "data_roaming_2";
+
+        /**
+         * Whether data roaming is enabled for sim3
+         *
+         * @hide
+         */
+        public static final String DATA_ROAMING_3 = "data_roaming_3";
+
+        /**
+         * Whether data roaming is enabled for sim4
+         *
+         * @hide
+         */
+        public static final String DATA_ROAMING_4 = "data_roaming_4";
+
+        /**
+         * M: For C2K SVLTE RAT control.
+         * @hide
+         */
+        public static final String LTE_ON_CDMA_RAT_MODE = "lte_on_cdma_rat_mode";
+
+        /**
+         * M: For C2K SVLTE APN auto/manual mode control.
+         * @hide
+         */
+        public static final String CDMA_APN_MANUAL_MODE = "cdma_apn_manual_mode";
+
+        /**
+          * Subscription to be used for common on a multi sim device. The supported values
+          * are 0 = SUB1, 1 = SUB2 and etc.
+          * @hide
+          */
+        public static final String MULTI_SIM_COMMON_SUBSCRIPTION = "multi_sim_common";
+
+        /**
+         * For tester to switch some features via engineering mode
+         *
+         * @hide
+         */
+        public static final String TELEPHONY_MISC_FEATURE_CONFIG =
+                "telephony_misc_feature_config";
+
+        /**
+         * Whether time and time zone automatically fetched from GPS
+         *
+         * @hide
+         */
+        public static final String AUTO_TIME_GPS = "auto_time_gps";
+
+        /**
+         * Whether ACM is enabled.
+         *
+         * @hide
+         */
+        public static final String ACM_ENABLED = "acm_enabled";
+
+        /**
+         * Whether LTE IMS is enabled.
+         *
+         * @hide
+         */
+        public static final String IMS_SWITCH = "ims_switch";
+        /** MTK ADD END. @} */
     }
 
     /**
