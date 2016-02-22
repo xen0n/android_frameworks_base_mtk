@@ -200,4 +200,74 @@ public class PhoneConstants {
     public static final int IMS_AUDIO_OUTPUT_DEFAULT = IMS_AUDIO_OUTPUT_ENABLE_SPEAKER;
     //FIXME maybe this shouldn't be here - sprout only
     public static final int CAPABILITY_3G   = 1;
+
+    // MTK
+
+    // VOLTE
+    public static final String DATA_IMS_CHANGED_KEY = "imsDataChanged";
+
+    /** M: APN type for device management */
+    public static final String APN_TYPE_DM = "dm";
+    /** M: APN type for WAP */
+    public static final String APN_TYPE_WAP = "wap";
+    /** M: APN type for NET */
+    public static final String APN_TYPE_NET = "net";
+    /** M: APN type for CMMAIL */
+    public static final String APN_TYPE_CMMAIL = "cmmail";
+    /** M: APN type for dedicate tethering apn */
+    public static final String APN_TYPE_TETHERING = "tethering";
+    /** M: APN type for RCSE */
+    public static final String APN_TYPE_RCSE = "rcse";
+
+    /* M: SS part */
+    // CFU query type
+    public static final String CFU_QUERY_TYPE_PROP = "persist.radio.cfu.querytype";
+    public static final String CFU_QUERY_TYPE_DEF_VALUE = "0";
+    /* M: SS part end */
+
+    public static final String CAPABILITY_SWITCH_PROP = "persist.radio.simswitch";
+
+    /* M: call control part start*/
+    public static final String PHONE_TYPE_KEY = "phoneType";
+    /* M: call control part end*/
+
+    // MVNO-API START
+    public static final String MVNO_TYPE_NONE = "";
+    public static final String MVNO_TYPE_SPN = "spn";
+    public static final String MVNO_TYPE_IMSI = "imsi";
+    public static final String MVNO_TYPE_PNN = "pnn";
+    public static final String MVNO_TYPE_GID = "gid";
+    // MVNO-API END
+
+    //[ALPS01577029]-START
+    // The TELEPHONY_MISC_FEATURE_CONFIG for tester to switch some features via engineering mode
+    //Bit 1: To support auto switch rat mode to 2G only for 3M TDD csfb project when we are not in china
+    public static final int MISC_FEATURE_CONFIG_MASK_AUTO_SWITCH_RAT = 0x01;
+    //[ALPS01577029]-END
+
+    //VOLTE IMS STATE
+    public static final int IMS_STATE_DISABLED = 0;
+
+    public static final int IMS_STATE_ENABLE = 1;
+
+    public static final int IMS_STATE_ENABLING = 2;
+
+    public static final int IMS_STATE_DISABLING = 3;
+
+    /**
+     * UT/XCAP Supplementary Service request domain selection constant definitions from IR.92 A.4
+     * IMS Voice Service settings management when using CS access.
+     * UT_CSFB_PS_PREFERRED is to indicate that sending SS request in the PS domain.
+     */
+    public static final int UT_CSFB_PS_PREFERRED = 0;
+    /**
+     * UT_CSFB_ONCE is to indicate that sending SS request in the CS domain once, and restore to
+     * the PS domain next time.
+     */
+    public static final int UT_CSFB_ONCE = 1;
+    /**
+     * UT_CSFB_UNTIL_NEXT_BOOT is to indicate that sending SS request in the CS domain until the
+     * UE performs a power-off/power-on or the UE detects a change of USIM/ISIM.
+     */
+    public static final int UT_CSFB_UNTIL_NEXT_BOOT = 2;
 }
