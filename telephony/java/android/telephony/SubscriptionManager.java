@@ -59,7 +59,7 @@ public class SubscriptionManager {
 
     /** An invalid subscription identifier */
     /** {@hide} */
-    public static final int INVALID_SUBSCRIPTION_ID = -1;
+    public static final int INVALID_SUBSCRIPTION_ID = -1000;
 
     /** Base value for Dummy SUBSCRIPTION_ID's. */
     /** FIXME: Remove DummySubId's, but for now have them map just below INVALID_SUBSCRIPTION_ID
@@ -68,7 +68,7 @@ public class SubscriptionManager {
 
     /** An invalid phone identifier */
     /** @hide */
-    public static final int INVALID_PHONE_INDEX = -1;
+    public static final int INVALID_PHONE_INDEX = -1000;
 
     /** An invalid slot identifier */
     /** @hide */
