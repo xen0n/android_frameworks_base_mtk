@@ -700,6 +700,9 @@ cat include/telephony/ril.h | \
     static final int RIL_UNSOL_GMSS_RAT_CHANGED = (RIL_UNSOL_MTK_BASE + 62);
     /// M: [C2K][IR][MD-IRAT] URC for GMSS RAT changed. @}
 
+    // XXX: constants below have no corresponding (leaked) sources to rely on!
+    static final int RIL_UNSOL_EUSIM_READY = (RIL_UNSOL_MTK_BASE + 63);
+
     /* M: Add C2K proprietary start */
     static final int RIL_REQUEST_C2K_BASE = 4000;
     static final int RIL_REQUEST_GET_NITZ_TIME = (RIL_REQUEST_C2K_BASE + 0);
