@@ -31,6 +31,7 @@ import android.telephony.Rlog;
 import android.os.Handler;
 import android.os.Message;
 import android.os.ServiceManager;
+import android.os.SystemProperties;
 import android.os.RemoteException;
 
 import com.android.internal.telephony.ISub;
@@ -97,8 +98,58 @@ public class SubscriptionManager {
     /** @hide */
     public static final int MAX_SUBSCRIPTION_ID_VALUE = DEFAULT_SUBSCRIPTION_ID - 1;
 
+    // MTK
+
+    /** @hide */
+    public static final int LTE_DC_PHONE_ID = TelephonyManager.getDefault().getPhoneCount();
+    /**
+     * M: Indicates the specified phone id for slot1 LteDcPhone.
+     */
+    /** @hide */
+    public static final int LTE_DC_PHONE_ID_1 = 10;
+    /**
+     * M: Indicates the specified phone id for slot2 LteDcPhone.
+     */
+    /** @hide */
+    public static final int LTE_DC_PHONE_ID_2 = 11;
+
+    /**
+     * M: Indicates the specified subscription identifier for LteDcPhone.
+     */
+    /** @hide */
+    public static final int LTE_DC_SUB_ID = -999;
+    /**
+     * M: Indicates the specified subscription identifier for slot1 LteDcPhone.
+     */
+    /** @hide */
+    public static final int LTE_DC_SUB_ID_1 = -10;
+    /**
+     * M: Indicates the specified subscription identifier for slot2 LteDcPhone.
+     */
+    /** @hide */
+    public static final int LTE_DC_SUB_ID_2 = -11;
+
     /** @hide */
     public static final Uri CONTENT_URI = Uri.parse("content://telephony/siminfo");
+
+    // MTK
+    /** @hide */
+    public static final int EXTRA_VALUE_NEW_SIM = 1;
+    /** @hide */
+    public static final int EXTRA_VALUE_REMOVE_SIM = 2;
+    /** @hide */
+    public static final int EXTRA_VALUE_REPOSITION_SIM = 3;
+    /** @hide */
+    public static final int EXTRA_VALUE_NOCHANGE = 4;
+
+    /** @hide */
+    public static final String INTENT_KEY_DETECT_STATUS = "simDetectStatus";
+    /** @hide */
+    public static final String INTENT_KEY_SIM_COUNT = "simCount";
+    /** @hide */
+    public static final String INTENT_KEY_NEW_SIM_SLOT = "newSIMSlot";
+    /** @hide */
+    public static final String INTENT_KEY_NEW_SIM_STATUS = "newSIMStatus";
 
     /**
      * TelephonyProvider unique key column name is the subscription id.
@@ -433,7 +484,7 @@ public class SubscriptionManager {
     public SubscriptionInfo getActiveSubscriptionInfo(int subId) {
         if (VDBG) logd("[getActiveSubscriptionInfo]+ subId=" + subId);
         if (!isValidSubscriptionId(subId)) {
-            logd("[getActiveSubscriptionInfo]- invalid subId");
+            logd("[getActiveSubscriptionInfo]- invalid subId, subId = " + subId);
             return null;
         }
 
@@ -487,7 +538,8 @@ public class SubscriptionManager {
     public SubscriptionInfo getActiveSubscriptionInfoForSimSlotIndex(int slotIdx) {
         if (VDBG) logd("[getActiveSubscriptionInfoForSimSlotIndex]+ slotIdx=" + slotIdx);
         if (!isValidSlotId(slotIdx)) {
-            logd("[getActiveSubscriptionInfoForSimSlotIndex]- invalid slotIdx");
+            logd("[getActiveSubscriptionInfoForSimSlotIndex]- invalid slotIdx, slotIdx = "
+                + slotIdx);
             return null;
         }
 
@@ -640,7 +692,7 @@ public class SubscriptionManager {
             logd("[addSubscriptionInfoRecord]- null iccId");
         }
         if (!isValidSlotId(slotId)) {
-            logd("[addSubscriptionInfoRecord]- invalid slotId");
+            logd("[addSubscriptionInfoRecord]- invalid slotId = " + slotId);
         }
 
         try {
@@ -668,7 +720,7 @@ public class SubscriptionManager {
     public int setIconTint(int tint, int subId) {
         if (VDBG) logd("[setIconTint]+ tint:" + tint + " subId:" + subId);
         if (!isValidSubscriptionId(subId)) {
-            logd("[setIconTint]- fail");
+            logd("[setIconTint]- fail, subId = " + subId + ", tint = " + tint);
             return -1;
         }
 
@@ -713,7 +765,7 @@ public class SubscriptionManager {
                     + " nameSource:" + nameSource);
         }
         if (!isValidSubscriptionId(subId)) {
-            logd("[setDisplayName]- fail");
+            logd("[setDisplayName]- fail, subId = " + subId);
             return -1;
         }
 
@@ -741,7 +793,7 @@ public class SubscriptionManager {
      */
     public int setDisplayNumber(String number, int subId) {
         if (number == null || !isValidSubscriptionId(subId)) {
-            logd("[setDisplayNumber]- fail");
+            logd("[setDisplayNumber]- fail, subId = " + subId);
             return -1;
         }
 
@@ -770,7 +822,7 @@ public class SubscriptionManager {
     public int setDataRoaming(int roaming, int subId) {
         if (VDBG) logd("[setDataRoaming]+ roaming:" + roaming + " subId:" + subId);
         if (roaming < 0 || !isValidSubscriptionId(subId)) {
-            logd("[setDataRoaming]- fail");
+            logd("[setDataRoaming]- fail, subId = " + subId);
             return -1;
         }
 
@@ -835,14 +887,59 @@ public class SubscriptionManager {
         return subId;
     }
 
-    /** @hide */
-    public static int getPhoneId(int subId) {
-        if (!isValidSubscriptionId(subId)) {
-            logd("[getPhoneId]- fail");
-            return INVALID_PHONE_INDEX;
+    /**
+     * Get subId associated with the slotId.
+     * @param slotId the specified slotId
+     * @return subId as a positive integer
+     * null if an invalid slot index
+     * @hide
+     */
+    public static int[] getSubIdUsingSlotId(int slotId) {
+        if (VDBG) logd("[getSubIdUsingSlotId]+ slotId:" + slotId);
+
+        // make the MTK version a wrapper
+        return getSubId(slotId);
+    }
+
+    /**
+     * Get subId associated with the slotId.
+     * @param phoneId the specified phoneId
+     * @return subId as a positive integer
+     * INVALID_SUBSCRIPTION_ID if an invalid phone index
+     * @hide
+     */
+    public static int getSubIdUsingPhoneId(int phoneId) {
+        if (VDBG) logd("[getSubIdUsingPhoneId]+ phoneId:" + phoneId);
+
+        int subId = INVALID_SUBSCRIPTION_ID;
+
+        try {
+            ISub iSub = ISub.Stub.asInterface(ServiceManager.getService("isub"));
+            if (iSub != null) {
+                subId = iSub.getSubIdUsingPhoneId(phoneId);
+            }
+        } catch (RemoteException ex) {
+            // ignore it
         }
 
+        return subId;
+    }
+
+    /** @hide */
+    public static int getPhoneId(int subId) {
         int result = INVALID_PHONE_INDEX;
+
+        // MTK
+        if (!isValidSubscriptionId(subId)) {
+            if (subId > DUMMY_SUBSCRIPTION_ID_BASE - TelephonyManager.getDefault().getSimCount()) {
+                result = (int) (SubscriptionManager.DUMMY_SUBSCRIPTION_ID_BASE  - subId);
+            } else {
+                result = SubscriptionManager.INVALID_PHONE_INDEX;
+            }
+
+            logd("[getPhoneId]- invalid subId = " + subId + " return = " + result);
+            return result;
+        }
 
         try {
             ISub iSub = ISub.Stub.asInterface(ServiceManager.getService("isub"));
@@ -860,6 +957,29 @@ public class SubscriptionManager {
 
     private static void logd(String msg) {
         Rlog.d(LOG_TAG, msg);
+    }
+
+    // MTK: setDefaultSubId
+    /**
+     * Set subId as default SubId.
+     * @param subId the specified subId
+     * @hide
+     */
+    public static void setDefaultSubId(int subId) {
+        if (VDBG) logd("setDefaultSubId sub id = " + subId);
+
+        if (subId <= 0) {
+            printStackTrace("setDefaultSubId subId 0");
+        }
+
+        try {
+            ISub iSub = ISub.Stub.asInterface(ServiceManager.getService("isub"));
+            if (iSub != null) {
+                iSub.setDefaultFallbackSubId(subId);
+            }
+        } catch (RemoteException ex) {
+            // ignore it
+        }
     }
 
     /**
@@ -1085,6 +1205,13 @@ public class SubscriptionManager {
      * @hide
      */
     public static boolean isValidSubscriptionId(int subId) {
+        // MTK-START
+        // Add the special handle for SVLTE
+        if (SystemProperties.getInt("ro.mtk_svlte_support", 0) == 1) {
+            return subId > INVALID_SUBSCRIPTION_ID || subId == LTE_DC_SUB_ID_1
+                    || subId == LTE_DC_SUB_ID_2;
+        }
+        // MTK-END
         return subId > INVALID_SUBSCRIPTION_ID ;
     }
 
@@ -1289,6 +1416,77 @@ public class SubscriptionManager {
             simState = TelephonyManager.SIM_STATE_UNKNOWN;
         }
         return simState;
+    }
+
+    // MTK
+
+    private static void printStackTrace(String msg) {
+        RuntimeException re = new RuntimeException();
+        logd("StackTrace - " + msg);
+        StackTraceElement[] st = re.getStackTrace();
+        for (StackTraceElement ste : st) {
+            logd(ste.toString());
+        }
+    }
+
+    /**
+     * Get the SubscriptionInfo with the subId key.
+     * @param subId The unique SubscriptionInfo key in database
+     * @return SubscriptionInfo, maybe null if not found
+     * @hide
+     */
+    public SubscriptionInfo getSubscriptionInfo(int subId) {
+        if (VDBG) {
+            logd("[getSubscriptionInfo]+ subId=" + subId);
+        }
+
+        if (!isValidSubscriptionId(subId)) {
+            logd("[getSubscriptionInfo]- invalid subId, subId = " + subId);
+            return null;
+        }
+
+        SubscriptionInfo subInfo = null;
+
+        try {
+            ISub iSub = ISub.Stub.asInterface(ServiceManager.getService("isub"));
+            if (iSub != null) {
+                subInfo = iSub.getSubscriptionInfo(subId);
+            }
+        } catch (RemoteException ex) {
+            // ignore it
+        }
+
+        return subInfo;
+    }
+
+    /**
+     * Get the SubscriptionInfo associated with the iccId.
+     * @param iccId the IccId of SIM card
+     * @return SubscriptionInfo, maybe null if not found
+     * @hide
+     */
+    public SubscriptionInfo getSubscriptionInfoForIccId(String iccId) {
+        if (VDBG) {
+            logd("[getSubscriptionInfoForIccId]+ iccId=" + iccId);
+        }
+
+        if (iccId == null) {
+            logd("[getSubscriptionInfoForIccId]- null iccid");
+            return null;
+        }
+
+        SubscriptionInfo result = null;
+
+        try {
+            ISub iSub = ISub.Stub.asInterface(ServiceManager.getService("isub"));
+            if (iSub != null) {
+                result = iSub.getSubscriptionInfoForIccId(iccId);
+            }
+        } catch (RemoteException ex) {
+            // ignore it
+        }
+
+        return result;
     }
 }
 
