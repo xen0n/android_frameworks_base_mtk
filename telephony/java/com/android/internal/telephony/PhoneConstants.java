@@ -87,6 +87,9 @@ public class PhoneConstants {
     public static final String DATA_NETWORK_ROAMING_KEY = "networkRoaming";
     public static final String PHONE_IN_ECM_STATE = "phoneinECMState";
 
+    // VOLTE
+    public static final String DATA_IMS_CHANGED_KEY = "imsDataChanged";
+
     public static final String REASON_LINK_PROPERTIES_CHANGED = "linkPropertiesChanged";
 
     /**
@@ -136,6 +139,35 @@ public class PhoneConstants {
     /** APN type for IA Emergency PDN */
     public static final String APN_TYPE_EMERGENCY = "emergency";
 
+    /** M: APN type for device management */
+    public static final String APN_TYPE_DM = "dm";
+    /** M: APN type for WAP */
+    public static final String APN_TYPE_WAP = "wap";
+    /** M: APN type for NET */
+    public static final String APN_TYPE_NET = "net";
+    /** M: APN type for CMMAIL */
+    public static final String APN_TYPE_CMMAIL = "cmmail";
+    /** M: APN type for dedicate tethering apn */
+    public static final String APN_TYPE_TETHERING = "tethering";
+    /** M: APN type for RCSE */
+    public static final String APN_TYPE_RCSE = "rcse";
+    /** M: APN type for XCAP */
+    public static final String APN_TYPE_XCAP = "xcap";
+    /** M: APN type for RCS */
+    public static final String APN_TYPE_RCS = "rcs";
+
+    /* M: SS part */
+    // CFU query type
+    public static final String CFU_QUERY_TYPE_PROP = "persist.radio.cfu.querytype";
+    public static final String CFU_QUERY_TYPE_DEF_VALUE = "0";
+    /* M: SS part end */
+
+    /**
+     * used to query current capability switch setting value
+     * @internal
+     */
+    public static final String PROPERTY_CAPABILITY_SWITCH = "persist.radio.simswitch";
+
     public static final int RIL_CARD_MAX_APPS    = 8;
 
     public static final int DEFAULT_CARD_INDEX   = 0;
@@ -147,6 +179,10 @@ public class PhoneConstants {
     public static final int MAX_PHONE_COUNT_TRI_SIM = 3;
 
     public static final String PHONE_KEY = "phone";
+
+    /// M: CC055: Notify Call state with phoneType @{
+    public static final String PHONE_TYPE_KEY = "phoneType";
+    /// @}
 
     public static final String SLOT_KEY  = "slot";
 
@@ -172,6 +208,9 @@ public class PhoneConstants {
     public static final int PHONE_ID1 = 0;
     public static final int PHONE_ID2 = 1;
     public static final int PHONE_ID3 = 2;
+
+    public static final int EVENT_SUBSCRIPTION_ACTIVATED   = 500;
+    public static final int EVENT_SUBSCRIPTION_DEACTIVATED = 501;
 
     // ICC SIM Application Types
     // TODO: Replace the IccCardApplicationStatus.AppType enums with these constants
@@ -200,4 +239,11 @@ public class PhoneConstants {
     public static final int IMS_AUDIO_OUTPUT_DEFAULT = IMS_AUDIO_OUTPUT_ENABLE_SPEAKER;
     //FIXME maybe this shouldn't be here - sprout only
     public static final int CAPABILITY_3G   = 1;
+
+    // MTK MVNO
+    public static final String MVNO_TYPE_NONE = "";
+    public static final String MVNO_TYPE_SPN = "spn";
+    public static final String MVNO_TYPE_IMSI = "imsi";
+    public static final String MVNO_TYPE_PNN = "pnn";
+    public static final String MVNO_TYPE_GID = "gid";
 }
