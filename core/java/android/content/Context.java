@@ -2947,6 +2947,83 @@ public abstract class Context {
      */
     public static final String KILLSWITCH_SERVICE = "killswitch";
 
+    // MTK services
+
+    /**
+     * @hide
+     * M: comment @{ add AGPS service
+     */
+    public static final String MTK_AGPS_SERVICE = "mtk-agps";
+    /// @}
+
+    /// M: comment @{ add PerfService service
+    /**
+     * @hide
+     */
+    public static final String MTK_PERF_SERVICE = "mtk-perfservice";
+    /// @}
+
+    /**
+     * M: Use with {@link #getSystemService} to retrieve a {@link
+     * com.mediatek.search.SearchEngineManager} for handling searches.
+     *
+     * @see #getSystemService
+     * @see com.mediatek.search.SearchEngineManager
+     * @hide
+     * @internal
+     */
+    public static final String SEARCH_ENGINE_SERVICE = "search_engine";
+
+    /**
+     * M: Use with {@link #getSystemService} to retrieve a
+     * {@link com.mediatek.audioprofile.AudioProfileManager} for handling
+     * management of audioprofile.
+     *
+     * @see #getSystemService
+     * @see com.mediatek.audioprofile.AudioProfileManager
+     * @hide
+     * @internal
+     */
+    public static final String AUDIO_PROFILE_SERVICE = "audioprofile";
+
+    /**
+     * M: Use with {@link #getSystemService} to retrieve a Mobile Service
+     * for handling mobile security.
+     * @hide
+     * @internal
+     */
+    public static final String MOBILE_SERVICE = "mobile";
+
+    /**
+     * M: Use with ServiceManager.getService to retrieve a HDMI Service
+     * for handling management of HDMI.
+     *
+     * @hide
+     * @internal
+     */
+    public static final String HDMI_SERVICE = "mtkhdmi";
+    /**
+     * M: Use with Servicemanager.getService to retrieve a
+     * {@link com.mediatek.rns.RnsService} for handling
+     * management of radio network selection.
+     *
+     * @see com.mediatek.rns.RnsService
+     * @hide
+     */
+    public static final String RNS_SERVICE = "rns";
+
+    /**
+     * Use with {@link #getSystemService} to retrieve a
+     * {@link android.telephony.TelephonyManagerEx} for handling management the
+     * telephony features of the device.
+     *
+     * @see #getSystemService
+     * @see android.telephony.TelephonyManagerEx
+     * @hide
+     * @internal
+     */
+    public static final String TELEPHONY_SERVICE_EX = "phoneEx";
+
     /**
      * Determine whether the given permission is allowed for a particular
      * process and user ID running in the system.
