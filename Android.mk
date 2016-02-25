@@ -413,6 +413,12 @@ LOCAL_SRC_FILES += \
 	packages/services/Proxy/com/android/net/IProxyCallback.aidl \
 	packages/services/Proxy/com/android/net/IProxyPortListener.aidl \
         telephony/java/com/android/ims/internal/IImsConfig.aidl \
+	telephony/java/com/mediatek/internal/telephony/ITelephonyEx.aidl \
+
+# NOTE: These two are just parcelables, don't (want to) know why the MTK build
+# system accepts them.
+#	telephony/java/com/mediatek/internal/telephony/SmsCbConfigInfo.aidl
+#	telephony/java/com/mediatek/internal/telephony/IccSmsStorageStatus.aidl
 
 
 # FRAMEWORKS_BASE_JAVA_SRC_DIRS comes from build/core/pathmap.mk
