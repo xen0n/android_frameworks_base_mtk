@@ -83,4 +83,11 @@ interface IImsRegistrationListener {
      * Compatibility with AOSP
      */
     void registrationDisconnected() = 8;
+
+    // MTK
+
+    /**
+     * Notifies the application when the device is disconnected from the IMS network.
+     */
+    void registrationDisconnectedWithCause(in int cause) = 100;
 }

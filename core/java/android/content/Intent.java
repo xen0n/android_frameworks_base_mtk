@@ -4196,6 +4196,108 @@ public class Intent implements Parcelable, Cloneable {
      */
     public static final int URI_ALLOW_UNSAFE = 1<<2;
 
+    //M: start
+    /**
+     * <p>Broadcast Action: The user has switched the mutiple SIM mode of phone. One or
+     * more radios have been turned off or on. The intent will have the following extra value:</p>
+     * <ul>
+     *   <li><em>state</em> - A boolean value indicating whether Airplane Mode is on. If true,
+     *   then cell radio and possibly other radios such as bluetooth or WiFi may have also been
+     *   turned off</li>
+     * </ul>
+     *
+     * <p class="note">This is a protected intent that can only be sent
+     * by the system.
+     * @hide
+     * @internal
+     */
+    public static final String ACTION_MSIM_MODE_CHANGED = "android.intent.action.MSIM_MODE";
+
+    /**
+     * A int associated with a {@link #ACTION_MSIM_MODE_CHANGED} activity
+     * describing the latest mode. 1 for sim1 only, 2 for sim2 only, 3 for dual sim
+     * @hide
+     * @internal
+     */
+    public static final String EXTRA_MSIM_MODE = "mode";
+
+    /**
+     * Broadcast Action: The USB thering function has been changed.
+     * @hide
+     */
+    @SdkConstant(SdkConstantType.BROADCAST_INTENT_ACTION)
+    public static final String ACTION_TETHERING_CHANGE =
+            "android.intent.action.TETHERING_CHANGED";
+
+    /**
+     * @hide
+     * Enable/Disable the tethering function from adb command
+     */
+    public static final String EXTRA_TETHERING_CONNECTED =
+            "tethering_isconnected";
+    //M: end
+
+    /// M:[SmartBook]Add SmartBook intent @{
+    /**
+     * Sticky broadcast of the current SMARTBOOK plug state.
+     * @hide
+     */
+    public final static String ACTION_SMARTBOOK_PLUG = "android.intent.action.SMARTBOOK_PLUG";
+
+    /**
+     * Extra in {@link #ACTION_SMARTBOOK_PLUG} indicating the state: true if
+     * plug in to SMARTBOOK, false if not.
+     * @hide
+     */
+    public final static String EXTRA_SMARTBOOK_PLUG_STATE = "state";
+    /// @}
+
+    /**
+     * <p>Broadcast Action: The user has switched the default SIM option for data connection. The
+     * intent will have the following extra value:</p>
+     * <ul>
+     *   <li><em>simid</em> - A long value indicating which SIM card is set as the default SIM</li>
+     * </ul>
+     *
+     * <p class="note">This is a protected intent that can only be sent
+     * by the system.
+     * @hide
+     * @internal
+     */
+    @SdkConstant(SdkConstantType.BROADCAST_INTENT_ACTION)
+    public static final String ACTION_DATA_DEFAULT_SIM_CHANGED = "android.intent.action.DATA_DEFAULT_SIM";
+
+    /**
+     * <p>Broadcast Action: The user has modified the sim information. The
+     * intent will have the following extra value:</p>
+     * <ul>
+     *   <li><em>simid</em> - An int value indicating which sim's information is modified</li>
+     *   <li><em>type</em> - An int value indicating which kind of information is modified</li>
+     * </ul>
+     *
+     * <p class="note">This is a protected intent that can only be sent
+     * by the system.
+     * @hide
+     * @internal
+     */
+    @SdkConstant(SdkConstantType.BROADCAST_INTENT_ACTION)
+    public static final String ACTION_SIM_SETTINGS_INFO_CHANGED = "android.intent.action.SIM_SETTING_INFO_CHANGED";
+
+    /**
+     * <p>Broadcast Action: The user has switched the default SIM option for sms. The
+     * intent will have the following extra value:</p>
+     * <ul>
+     *   <li><em>simid</em> - A long value indicating which SIM card is set as the default SIM</li>
+     * </ul>
+     *
+     * <p class="note">This is a protected intent that can only be sent
+     * by the system.
+     * @hide
+     * @internal
+     */
+    @SdkConstant(SdkConstantType.BROADCAST_INTENT_ACTION)
+    public static final String ACTION_SMS_DEFAULT_SIM_CHANGED = "android.intent.action.SMS_DEFAULT_SIM";
+
     // ---------------------------------------------------------------------
 
     private String mAction;

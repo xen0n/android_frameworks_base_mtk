@@ -494,4 +494,16 @@ public class NetworkInfo implements Parcelable {
                 return new NetworkInfo[size];
             }
         };
+
+    // MTK
+
+    /**
+     * @hide
+     * @param typeName typeName set for network info
+     */
+    public void setTypeName(String typeName) {
+        synchronized (this) {
+            mTypeName = typeName;
+        }
+    }
 }

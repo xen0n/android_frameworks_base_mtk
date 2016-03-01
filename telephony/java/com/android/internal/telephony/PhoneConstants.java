@@ -246,4 +246,51 @@ public class PhoneConstants {
     public static final String MVNO_TYPE_IMSI = "imsi";
     public static final String MVNO_TYPE_PNN = "pnn";
     public static final String MVNO_TYPE_GID = "gid";
+
+    //[ALPS01577029]-START
+    // The TELEPHONY_MISC_FEATURE_CONFIG for tester to switch some features via engineering mode
+    //Bit 1: To support auto switch rat mode to 2G only for 3M TDD csfb project when we are not in china
+    public static final int MISC_FEATURE_CONFIG_MASK_AUTO_SWITCH_RAT = 0x01;
+    //[ALPS01577029]-END
+
+    //VOLTE IMS STATE
+    public static final int IMS_STATE_DISABLED = 0;
+
+    public static final int IMS_STATE_ENABLE = 1;
+
+    public static final int IMS_STATE_ENABLING = 2;
+
+    public static final int IMS_STATE_DISABLING = 3;
+
+    /**
+     * UT/XCAP Supplementary Service request domain selection constant definitions from IR.92 A.4
+     * IMS Voice Service settings management when using CS access.
+     * UT_CSFB_PS_PREFERRED is to indicate that sending SS request in the PS domain.
+     * @internal
+     */
+    public static final int UT_CSFB_PS_PREFERRED = 0;
+    /**
+     * UT_CSFB_ONCE is to indicate that sending SS request in the CS domain once, and restore to
+     * the PS domain next time.
+     * @internal
+     */
+    public static final int UT_CSFB_ONCE = 1;
+    /**
+     * UT_CSFB_UNTIL_NEXT_BOOT is to indicate that sending SS request in the CS domain until the
+     * UE performs a power-off/power-on or the UE detects a change of USIM/ISIM.
+     # @internal
+     */
+    public static final int UT_CSFB_UNTIL_NEXT_BOOT = 2;
+
+    public static final int STATE_DISCONNECTED = 0;
+    public static final int STATE_CONNECTED = 1;
+    public static final int RAT_MODE_GSM = 0;
+    public static final int RAT_MODE_C2K = 7;
+
+    /// M:Svlte solution2 modify, used in ACTION_RADIO_TECHNOLOGY_CHANGED @{
+    public static final String OLD_PHONE_KEY = "oldphone";
+
+    public static final String OLD_SUBSCRIPTION_KEY  = "oldsubscription";
+
+    public static final String OLD_SLOT_KEY  = "oldslot";
 }

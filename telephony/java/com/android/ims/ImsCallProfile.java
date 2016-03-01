@@ -169,6 +169,7 @@ public class ImsCallProfile implements Parcelable {
      *  cna : Calling name
      *  ussd : For network-initiated USSD, MT only
      *  remote_uri : Connected user identity (it can be used for the conference)
+     *  pau : Additional user identity information
      *  parrentCallId: Parent call ID info.
      *  ChildNum: Child number info.
      *  Codec: Codec info.
@@ -184,6 +185,12 @@ public class ImsCallProfile implements Parcelable {
     public static final String EXTRA_CODEC = "Codec";
     public static final String EXTRA_DISPLAY_TEXT = "DisplayText";
     public static final String EXTRA_ADDITIONAL_CALL_INFO = "AdditionalCallInfo";
+
+    // MTK
+    public static final String EXTRA_PAU = "pau";
+    public static final String EXTRA_MPTY = "mpty";
+    public static final String EXTRA_CONF_PARTICIPANT_INDEX = "conf_participant_index";
+    public static final String EXTRA_CONF_PARTICIPANT_STATE = "conf_participant_state";
 
     // Extra string for internal use only. OEMs should not use
     // this for packing extras.
@@ -422,5 +429,32 @@ public class ImsCallProfile implements Parcelable {
      */
     private static boolean isVideoStateSet(int videoState, int videoStateToCheck) {
         return (videoState & videoStateToCheck) == videoStateToCheck;
+    }
+
+    // MTK
+
+    /**
+     * Converts from the call types defined in {@link com.android.ims.ImsCallProfile} to the
+     * video state values defined in {@link VideoProfile}.
+     *
+     * @param callType The call type.
+     * @return The video state.
+     */
+    public static int getVideoStateFromCallType(int callType) {
+        switch (callType) {
+            case CALL_TYPE_VT_NODIR:
+                return VideoProfile.VideoState.PAUSED |
+                        VideoProfile.VideoState.BIDIRECTIONAL;
+            case CALL_TYPE_VT_TX:
+                return VideoProfile.VideoState.TX_ENABLED;
+            case CALL_TYPE_VT_RX:
+                return VideoProfile.VideoState.RX_ENABLED;
+            case CALL_TYPE_VT:
+                return VideoProfile.VideoState.BIDIRECTIONAL;
+            case CALL_TYPE_VOICE:
+                return VideoProfile.VideoState.AUDIO_ONLY;
+            default:
+                return VideoProfile.VideoState.AUDIO_ONLY;
+        }
     }
 }

@@ -414,6 +414,9 @@ LOCAL_SRC_FILES += \
 	packages/services/Proxy/com/android/net/IProxyPortListener.aidl \
         telephony/java/com/android/ims/internal/IImsConfig.aidl \
 	telephony/java/com/mediatek/internal/telephony/ITelephonyEx.aidl \
+    core/java/com/mediatek/epdg/IEpdgManager.aidl \
+    core/java/com/mediatek/gba/IGbaService.aidl \
+    core/java/com/mediatek/rns/IRnsManager.aidl \
 
 # NOTE: These two are just parcelables, don't (want to) know why the MTK build
 # system accepts them.

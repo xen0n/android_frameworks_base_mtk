@@ -20,6 +20,7 @@ import static android.Manifest.permission.MANAGE_NETWORK_POLICY;
 import static android.Manifest.permission.RECEIVE_DATA_ACTIVITY_CHANGE;
 import static android.net.ConnectivityManager.CONNECTIVITY_ACTION;
 import static android.net.ConnectivityManager.CONNECTIVITY_ACTION_IMMEDIATE;
+import static android.net.ConnectivityManager.ROVE_OUT_ALERT;
 import static android.net.ConnectivityManager.TYPE_NONE;
 import static android.net.ConnectivityManager.TYPE_VPN;
 import static android.net.ConnectivityManager.getNetworkTypeName;
@@ -107,13 +108,20 @@ import com.android.internal.net.NetworkStatsFactory;
 import com.android.internal.net.VpnConfig;
 import com.android.internal.net.VpnProfile;
 import com.android.internal.telephony.DctConstants;
+///Support for ePDG
+import com.android.internal.telephony.PhoneConstants;
+import com.android.internal.telephony.TelephonyIntents;
 import com.android.internal.util.AsyncChannel;
 import com.android.internal.util.IndentingPrintWriter;
+///Support for ePDG
+import com.android.internal.util.Protocol;
 import com.android.internal.util.XmlUtils;
 import com.android.server.am.BatteryStatsService;
 import com.android.server.connectivity.DataConnectionStats;
 import com.android.server.connectivity.Nat464Xlat;
 import com.android.server.connectivity.NetworkAgentInfo;
+///Support for ePDG
+import com.android.server.connectivity.NetworkAgentInfo.HandoverType;
 import com.android.server.connectivity.NetworkMonitor;
 import com.android.server.connectivity.PacManager;
 import com.android.server.connectivity.PermissionMonitor;
@@ -123,6 +131,9 @@ import com.android.server.net.BaseNetworkObserver;
 import com.android.server.net.LockdownVpnTracker;
 import com.google.android.collect.Lists;
 import com.google.android.collect.Sets;
+
+import com.mediatek.epdg.EpdgManager;
+import com.mediatek.rns.RnsManager;
 
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
@@ -392,6 +403,11 @@ public class ConnectivityService extends IConnectivityManager.Stub
      */
     private static final int EVENT_RELEASE_NETWORK_REQUEST_WITH_INTENT = 27;
 
+    // MTK
+    private static final int EVENT_HANDOVER_EXPIRED = 100;
+    private static final int EVENT_HANDOVER_CONNECT = 101;
+    private static final int EVENT_PDN_RETRY = 102;
+
 
     /** Handler used for internal events. */
     final private InternalHandler mHandler;
@@ -446,6 +462,25 @@ public class ConnectivityService extends IConnectivityManager.Stub
 
     // sequence number of NetworkRequests
     private int mNextNetworkRequestId = 1;
+
+    // MTK
+    private static final int PDN_RETRY_INTERVAL = 30 * 1000;
+    private static final int HANDOVER_TRANSFER_TIME = 30 * 1000;
+    private static final int NO_REQUEST_SCORE = -1;
+    private static final int EPDG_RELEASE_SCORE = 100;
+    private static final int MOBILE_REQUEST_SCORE = 45;
+    private static final int MOBILE_AGENT_SCORE = 85;
+    private static final int EPDG_REQUEST_SCORE = 75;
+    private static final int EPDG_FACOTRY_HIGH_SCORE = 80;
+    private static final int EPDG_FACOTRY_LOW_SCORE = -1;
+    private static final String MOBILE_AGENT_NAME = "Telephony";
+    private static final String EPDG_AGENT_NAME = "Epdg";
+    private static boolean sIsEpdgSupported = false;
+    private static int sHandoverRadioType = ConnectivityManager.TYPE_NONE;
+    private static int sCurrentRadioType = ConnectivityManager.TYPE_NONE;
+    RnsManager mRnsManager = null;
+    private static int sImsDisconnectCause = 0;
+    private boolean mIsImsRetryFlag = false;
 
     /**
      * Implements support for the legacy "one network per network type" model.
@@ -4646,5 +4681,526 @@ public class ConnectivityService extends IConnectivityManager.Stub
         synchronized (mVpns) {
             return mVpns.get(user).setUnderlyingNetworks(networks);
         }
+    }
+
+    // MTK
+
+    /** M: Get airplane mode is on or off
+     * @return true if airplane mode on
+     * @hide
+     */
+    @Override
+    public boolean isAirplaneModeOn() {
+        final long ident = Binder.clearCallingIdentity();
+        boolean isOn = false;
+        try {
+            isOn = Settings.System.getInt(mContext.getContentResolver(),
+                    Settings.Global.AIRPLANE_MODE_ON, 0) == 1;
+        } finally {
+            Binder.restoreCallingIdentity(ident);
+        }
+        return isOn;
+    }
+
+    ///Support for ePDG @{
+    /**
+      * M: trigger NetworkRequest to each network factory.
+      * @param radioType The new radio type.
+      *
+      */
+    public void connectToRadio(int radioType) {
+        mHandler.sendMessage(mHandler.obtainMessage(EVENT_HANDOVER_CONNECT, radioType,
+                0));
+    }
+
+    private void handleHandoverConnect(int radioType) {
+        String nwTypeName = MOBILE_AGENT_NAME;
+        int newScore = MOBILE_REQUEST_SCORE;
+
+        if (sCurrentRadioType == ConnectivityManager.TYPE_NONE) {
+            log("No active IMS connection");
+            return;
+        } else if (radioType != ConnectivityManager.TYPE_WIFI &&
+                radioType != ConnectivityManager.TYPE_MOBILE) {
+            if (radioType == ConnectivityManager.TYPE_NONE) {
+                disconnectImsPdn();
+                return;
+            }
+            Slog.e(TAG, "Wrong radioTye:" + radioType);
+            return;
+        } else if (sCurrentRadioType == radioType) {
+            log("skip due to same rat type:" + sCurrentRadioType);
+            return;
+        } else if (sHandoverRadioType != ConnectivityManager.TYPE_NONE) {
+            log("Handover is ongoing:" + sHandoverRadioType);
+            return;
+        }
+
+        //Configure low score of ePDG when handover is successfully done.
+        if (radioType == ConnectivityManager.TYPE_WIFI) {
+            nwTypeName = EPDG_AGENT_NAME;
+            newScore = EPDG_REQUEST_SCORE;
+            setNetworkFactoryScore(EPDG_AGENT_NAME, EPDG_FACOTRY_HIGH_SCORE);
+        }
+        Slog.d(TAG, "connectToRadio nwTypeName = " + nwTypeName
+                    + ",newScore =" + newScore + "," + radioType);
+
+        if (evalHandoverRequest(newScore, nwTypeName)) {
+            Slog.d(TAG, "Start handover");
+            sHandoverRadioType = radioType;
+            notifyHandoverResult(true, true);
+            mHandler.sendMessageDelayed(mHandler.obtainMessage(
+                        EVENT_HANDOVER_EXPIRED), HANDOVER_TRANSFER_TIME);
+        }
+    }
+
+    private boolean evalHandoverRequest(int score, String networkFactory) {
+        boolean result = false;
+
+        for (NetworkRequest nr : mNetworkRequests.keySet()) {
+            if (nr.networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_IMS) &&
+                nr.networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_EPDG)) {
+                for (NetworkFactoryInfo nfi : mNetworkFactoryInfos.values()) {
+                    if (nfi.name.equals(networkFactory)) {
+                        nfi.asyncChannel.sendMessage(
+                        android.net.NetworkFactory.CMD_REQUEST_NETWORK, score, 0, nr);
+                        if (DBG) log("evalHandoverRequest " + nfi.name);
+                        result = true;
+                    }
+                }
+            }
+        }
+        return result;
+    }
+
+   /** M: for ePDG handover used. */
+    private void retryRequestToNetwork(SparseArray<NetworkRequest> nrs, int newScore) {
+        String nwTypeName = MOBILE_AGENT_NAME;
+        Slog.d(TAG, "retryRequestToNetwork newScore=" + newScore);
+
+        if (newScore == EPDG_REQUEST_SCORE) { //Send to ePDG
+            nwTypeName = EPDG_AGENT_NAME;
+        }
+
+        for (int i = 0; i < nrs.size(); i++) {
+            NetworkRequest nr = nrs.valueAt(i);
+            if (isHandoverSupport(nr.networkCapabilities)) {
+                for (NetworkFactoryInfo nfi : mNetworkFactoryInfos.values()) {
+                    if (nfi.name.equals(nwTypeName)) {
+                        nfi.asyncChannel.sendMessage(
+                        android.net.NetworkFactory.CMD_REQUEST_NETWORK, newScore, 0, nr);
+                    }
+                }
+            }
+        }
+    }
+
+    private void handleEpdgDisconnect(NetworkAgentInfo nai) {
+        if (mRnsManager == null) {
+            mRnsManager = (RnsManager) mContext.getSystemService(Context.RNS_SERVICE);
+        }
+
+        int ratType = ConnectivityManager.TYPE_NONE;
+
+        if (nai.networkInfo != null &&
+            nai.networkInfo.getType() > ConnectivityManager.TYPE_WIFI) {
+             if (nai.networkCapabilities != null &&
+                 nai.networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR)) {
+                 ratType = ConnectivityManager.TYPE_MOBILE;
+             } else if (nai.networkCapabilities != null &&
+                 nai.networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_EPDG)) {
+                 ratType = ConnectivityManager.TYPE_WIFI;
+             }
+             log("handleEpdgDisconnect:" + ratType);
+        } else {
+            log("handleEpdgDisconnect done for default type");
+            notifyNetworkCallbacks(nai, ConnectivityManager.CALLBACK_LOST);
+            return;
+        }
+
+        int tryNewRadio = mRnsManager.getTryAnotherRadioType(ratType);
+
+        boolean keep = false;
+        for (int i = 0; i < nai.networkRequests.size(); i++) {
+            NetworkRequest r = nai.networkRequests.valueAt(i);
+            if (isRequest(r)) {
+                keep = true;
+                break;
+            }
+        }
+
+        if (keep && tryNewRadio == ConnectivityManager.TYPE_NONE) {
+            //First connect failure
+            log("No retry for ePDG/Mobile and notify app:" + nai.handoverType);
+            if (nai.handoverType != HandoverType.DISCONNECT) {
+                updateFailureCause(ratType, nai.networkCapabilities);
+                notifyNetworkCallbacks(nai, ConnectivityManager.CALLBACK_LOST);
+            } else {
+                log("Handover is running");
+            }
+        } else if (keep && !nai.created && nai.handoverType == HandoverType.NONE) {
+            //Retry trigger for first connect
+            int score = handleNetworkSelection(tryNewRadio);
+                retryRequestToNetwork(nai.networkRequests, score);
+        } else { //Failure due to handover
+            log("Retry policy:" + nai.handoverType + ":" + nai.created + ":" + keep);
+            if (nai.created && nai.handoverType == HandoverType.DISCONNECT) {
+               log("Disconnected by handover");
+            } else if(!nai.created && nai.handoverType == HandoverType.CONNECT) {
+               log("Failed to setup new RAT on handover");
+
+               /* Need to fallback the original state */
+               /* Reconfigure network factory score to low score if handover is failed.*/
+               if (sHandoverRadioType == ConnectivityManager.TYPE_WIFI) {
+                   setNetworkFactoryScore(EPDG_AGENT_NAME, EPDG_FACOTRY_LOW_SCORE);
+                   EpdgManager epdgManager = EpdgManager.getInstance(mContext);
+                   int cause = epdgManager.getDisconnectCause(
+                                   NetworkCapabilities.NET_CAPABILITY_IMS);
+                   if (cause == 1999) {
+                       log("IP inconsistent.");
+                       disconnectImsPdn();
+                   }
+               } else if (sHandoverRadioType == ConnectivityManager.TYPE_MOBILE) {
+                   evalHandoverRequest(EPDG_REQUEST_SCORE, MOBILE_AGENT_NAME);
+               }
+               notifyHandoverResult(false, false);
+            }else {
+               updateFailureCause(ratType, nai.networkCapabilities);
+               notifyNetworkCallbacks(nai, ConnectivityManager.CALLBACK_LOST);
+            }
+        }
+    }
+
+    private void setNetworkFactoryScore(String name, int score) {
+
+        for (NetworkFactoryInfo nfi : mNetworkFactoryInfos.values()) {
+            if (nfi.name.equals(name)) {
+                //CMD_SET_SCORE = BASE_NETWORK_FACTORY + 2;
+                nfi.asyncChannel.sendMessage(Protocol.BASE_NETWORK_FACTORY + 2, score, 0);
+            }
+        }
+    }
+
+    private int getRnsSelectionScore(NetworkRequestInfo nri, int oldScore) {
+        int score = oldScore;
+        final NetworkCapabilities newCap = nri.request.networkCapabilities;
+            if (mRnsManager == null) {
+                mRnsManager = (RnsManager) mContext.getSystemService(Context.RNS_SERVICE);
+            }
+        log("getRnsSelectionScore:" + nri.request.legacyType);
+        if (nri.request.legacyType == ConnectivityManager.TYPE_MOBILE_IMS) {
+            setRetryFlag(false);
+        }
+        return handleRnsSelection(mRnsManager.getAllowedRadioList(nri.request.legacyType));
+    }
+
+    private int handleRnsSelection(int rnsRadioType) {
+        int score = 0;
+
+        //Overriden other PDN policy to align with IMS.
+        if (sCurrentRadioType == ConnectivityManager.TYPE_WIFI) {
+            score = EPDG_REQUEST_SCORE;
+            return score;
+        } else if (sCurrentRadioType == ConnectivityManager.TYPE_MOBILE){
+            score = MOBILE_REQUEST_SCORE;
+            return score;
+        }
+
+        if (rnsRadioType == RnsManager.ALLOWED_RADIO_WIFI) {
+            log("Rns allow to create WiFi");
+            setNetworkFactoryScore(EPDG_AGENT_NAME, EPDG_FACOTRY_HIGH_SCORE);
+            score = EPDG_REQUEST_SCORE;
+        } else if (rnsRadioType == RnsManager.ALLOWED_RADIO_MOBILE) {
+            log("Rns allow to create Mobile");
+            setNetworkFactoryScore(EPDG_AGENT_NAME, EPDG_FACOTRY_LOW_SCORE);
+            score = MOBILE_REQUEST_SCORE;
+        } else if (rnsRadioType == RnsManager.ALLOWED_RADIO_DENY) {
+            score = NO_REQUEST_SCORE;
+            sImsDisconnectCause = 2006; //Deny by RNS policy.
+            setRetryFlag(true);
+        } else if (rnsRadioType == RnsManager.ALLOWED_RADIO_NONE) {
+            score = NO_REQUEST_SCORE;
+            sImsDisconnectCause = 2007; //Deny by PS call, but call try CS call
+            setRetryFlag(true);
+        }
+
+        return score;
+    }
+
+    private int handleNetworkSelection(int nwType) {
+        int score = 0;
+
+        if (nwType == ConnectivityManager.TYPE_WIFI) {
+            log("Retry on ePDG");
+            setNetworkFactoryScore(EPDG_AGENT_NAME, EPDG_FACOTRY_HIGH_SCORE);
+            score = EPDG_REQUEST_SCORE;
+        } else if (nwType == ConnectivityManager.TYPE_MOBILE) {
+            log("Retry on Mobile");
+            setNetworkFactoryScore(EPDG_AGENT_NAME, EPDG_FACOTRY_LOW_SCORE);
+            score = MOBILE_REQUEST_SCORE;
+        }
+
+        return score;
+    }
+
+    private NetworkAgentInfo getExistedNetworkAgentInfo(NetworkAgentInfo nai) {
+        int netId = -1;
+        int nwType = ConnectivityManager.TYPE_NONE;
+
+        if (nai.networkCapabilities.hasCapability(
+                NetworkCapabilities.NET_CAPABILITY_IMS)) {
+            nwType = ConnectivityManager.TYPE_MOBILE_IMS;
+        } else if (nai.networkCapabilities.hasCapability(
+                NetworkCapabilities.NET_CAPABILITY_MMS)) {
+            nwType = ConnectivityManager.TYPE_MOBILE_MMS;
+        } else if (nai.networkCapabilities.hasCapability(
+                NetworkCapabilities.NET_CAPABILITY_SUPL)) {
+            nwType = ConnectivityManager.TYPE_MOBILE_SUPL;
+        } else if (nai.networkCapabilities.hasCapability(
+                NetworkCapabilities.NET_CAPABILITY_XCAP)) {
+            nwType = ConnectivityManager.TYPE_MOBILE_XCAP;
+        } else {
+            Slog.d(TAG, "Unsupported network cap:" + nai.networkCapabilities);
+            return null;
+        }
+
+        return mLegacyTypeTracker.getNetworkForType(nwType);
+    }
+
+    private void handleHandoverExpired() {
+        if (sHandoverRadioType != ConnectivityManager.TYPE_NONE) {
+            Slog.d(TAG, "Handover prcoedurer takes too long:" + sHandoverRadioType);
+
+            /* Need to fallback the original state */
+            /* Reconfigure network factory score to low score if handover is failed.*/
+            if (sHandoverRadioType == ConnectivityManager.TYPE_WIFI) {
+                setNetworkFactoryScore(EPDG_AGENT_NAME, EPDG_FACOTRY_LOW_SCORE);
+            } else if (sHandoverRadioType == ConnectivityManager.TYPE_MOBILE) {
+                evalHandoverRequest(EPDG_REQUEST_SCORE, MOBILE_AGENT_NAME);
+            }
+            sHandoverRadioType = ConnectivityManager.TYPE_NONE;
+        }
+    }
+
+    private boolean isHandoverSupport(NetworkCapabilities cap) {
+        return cap.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) &&
+            cap.hasTransport(NetworkCapabilities.TRANSPORT_EPDG);
+    }
+
+    /**
+     * WFC feature.
+     * To get the disconnect cause when the connection is lost.
+     *
+     * @param networkType the type of network.
+     * @return the connection disconnect code.
+     */
+    public int getDisconnectCause(int networkType) {
+        if (networkType != ConnectivityManager.TYPE_MOBILE_IMS) {
+            loge("Unsupported network type:" + networkType);
+            return -1;
+        }
+        log("getDisconnectCause:" + sImsDisconnectCause);
+        return sImsDisconnectCause;
+     }
+
+    private void notifyHandoverResult(boolean isOngoing, boolean isSucceed) {
+        if (isOngoing) {
+            sendHandoverIntent(sHandoverRadioType, true, true);
+            return;
+        }
+        sendHandoverIntent(sHandoverRadioType, false, isSucceed);
+        if (mHandler.hasMessages(EVENT_HANDOVER_EXPIRED)) {
+            mHandler.removeMessages(EVENT_HANDOVER_EXPIRED);
+        }
+        sHandoverRadioType = ConnectivityManager.TYPE_NONE;
+    }
+
+    private void sendHandoverIntent(int networkType, boolean isStarted, boolean result) {
+        if (DBG) log("sendHandoverIntent:" + networkType + ":" + isStarted + ":" + result);
+
+        if (networkType == ConnectivityManager.TYPE_WIFI ){
+            networkType = ConnectivityManager.TYPE_EPDG;
+        } else if (networkType == ConnectivityManager.TYPE_MOBILE) {
+            networkType = ConnectivityManager.TYPE_MOBILE_IMS;
+        }
+
+        Intent intent = null;
+        if (isStarted) {
+            intent = new Intent(RnsManager.CONNECTIVITY_ACTION_HANDOVER_START);
+            SystemProperties.set("net.handover.flag", "true");
+        } else {
+            intent = new Intent(RnsManager.CONNECTIVITY_ACTION_HANDOVER_END);
+            intent.putExtra(RnsManager.EXTRA_HANDOVER_RESULT, result);
+            SystemProperties.set("net.handover.flag", "false");
+        }
+        intent.putExtra(RnsManager.EXTRA_NETWORK_TYPE, networkType);
+        intent.addFlags(Intent.FLAG_RECEIVER_REPLACE_PENDING |
+                Intent.FLAG_RECEIVER_REGISTERED_ONLY_BEFORE_BOOT);
+        final long ident = Binder.clearCallingIdentity();
+        try {
+            mContext.sendBroadcastAsUser(intent, UserHandle.ALL);
+        } finally {
+            Binder.restoreCallingIdentity(ident);
+        }
+    }
+
+    private void updateFailureCause(int networkType, NetworkCapabilities capability) {
+        if (!capability.hasCapability(NetworkCapabilities.NET_CAPABILITY_IMS)) {
+            return;
+        }
+
+        sCurrentRadioType = ConnectivityManager.TYPE_NONE;
+        if (networkType == ConnectivityManager.TYPE_WIFI) {
+            EpdgManager epdgManager = EpdgManager.getInstance(mContext);
+            sImsDisconnectCause = epdgManager.getDisconnectCause(
+                                    NetworkCapabilities.NET_CAPABILITY_IMS);
+            if (sImsDisconnectCause == 0) {
+                NetworkInfo info = getNetworkInfo(ConnectivityManager.TYPE_WIFI);
+                if (info == null || !info.isConnected()) {
+                    sImsDisconnectCause = 2001;
+                    //Wi-Fi is disconnected and ePDG is disconnected.
+                } else if (mTelephonyManager.getNetworkType()
+                            == TelephonyManager.NETWORK_TYPE_LTE) {
+                    sImsDisconnectCause = 2004;
+                    // Wi-Fi is connected, but LTE is not available.
+                } else {
+                    sImsDisconnectCause = 2005;
+                    // Wi-Fi is connected and LTE is available.
+                }
+            }
+        } else {
+            sImsDisconnectCause = 2003; // Disconnect in LTE
+        }
+        setRetryFlag(true);
+        log("updateFailureCause:" + sImsDisconnectCause);
+    }
+
+    /**
+      * M: trigger retry NetworkRequest to each network factory.
+      * @param radioType The new radio type.
+      *
+      */
+    public void retryConnectToRadio(int radioType) {
+        //No error. No need to retry.
+        if (!mIsImsRetryFlag) {
+            Slog.d(TAG, "Skip due to no failure cause");
+            return;
+        }
+
+        // Parameter checking.
+
+        if (radioType != ConnectivityManager.TYPE_WIFI &&
+                radioType != ConnectivityManager.TYPE_MOBILE) {
+            Slog.e(TAG, "Wrong radioTye:" + radioType);
+            return;
+        }
+
+        //Check IMS PDN connection is disconnected.
+        if (sCurrentRadioType != ConnectivityManager.TYPE_NONE) {
+            return;
+        }
+
+        if (!mHandler.hasMessages(EVENT_PDN_RETRY)) {
+            mHandler.sendMessageDelayed(mHandler.obtainMessage(EVENT_PDN_RETRY, radioType,
+                    0), PDN_RETRY_INTERVAL);
+        }
+    }
+
+    private void handlePdnRetry(int radioType) {
+        String nwTypeName = MOBILE_AGENT_NAME;
+        int newScore = MOBILE_REQUEST_SCORE;
+        boolean isHandover = false;
+
+        //Check IMS NetworkAgent is empty
+        if (isExistedNaiWithIms()) {
+            return;
+        }
+
+        /* Reset the old pending request and prepare to trigger re-connect later) */
+        for (NetworkRequest nr : mNetworkRequests.keySet()) {
+            if (isRequest(nr) &&
+                nr.networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_EPDG)) {
+                for (NetworkFactoryInfo nfi : mNetworkFactoryInfos.values()) {
+                     nfi.asyncChannel.sendMessage(
+                     android.net.NetworkFactory.CMD_REQUEST_NETWORK,
+                     EPDG_RELEASE_SCORE, 0, nr);
+                }
+            }
+        }
+
+        if (radioType == ConnectivityManager.TYPE_WIFI) {
+            setNetworkFactoryScore(EPDG_AGENT_NAME, EPDG_FACOTRY_HIGH_SCORE);
+            nwTypeName = EPDG_AGENT_NAME;
+            newScore = EPDG_REQUEST_SCORE;
+        } else {
+            setNetworkFactoryScore(EPDG_AGENT_NAME, EPDG_FACOTRY_LOW_SCORE);
+        }
+        mIsImsRetryFlag = false;
+
+        Slog.d(TAG, "retryConnectToRadio nwTypeName = " + nwTypeName
+                    + ",newScore =" + newScore + "," + radioType);
+
+        for (NetworkRequest nr : mNetworkRequests.keySet()) {
+            if (nr.networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_EPDG)) {
+                for (NetworkFactoryInfo nfi : mNetworkFactoryInfos.values()) {
+                    if (nfi.name.equals(nwTypeName)) {
+                        nfi.asyncChannel.sendMessage(
+                        android.net.NetworkFactory.CMD_REQUEST_NETWORK, newScore, 0, nr);
+                    }
+                }
+            }
+        }
+    }
+
+    private boolean isExistedNaiWithIms() {
+        for (NetworkAgentInfo nai : mNetworkAgentInfos.values()) {
+            if (nai.networkCapabilities.hasCapability(
+                    NetworkCapabilities.NET_CAPABILITY_IMS)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private void disconnectImsPdn() {
+        Slog.d(TAG, "disconnectImsPdn");
+
+        if (sCurrentRadioType == ConnectivityManager.TYPE_NONE) {            
+            return;
+        }
+
+        for (NetworkRequest nr : mNetworkRequests.keySet()) {
+            if (isRequest(nr) &&
+                nr.networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_IMS) &&
+                nr.networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_EPDG)) {
+                for (NetworkFactoryInfo nfi : mNetworkFactoryInfos.values()) {
+                     nfi.asyncChannel.sendMessage(
+                     android.net.NetworkFactory.CMD_REQUEST_NETWORK,
+                     EPDG_RELEASE_SCORE, 0, nr);
+                }
+            }
+        }
+    }
+
+    ///@}
+   ///@}
+    public void sendRoveOutAlert() {
+        Slog.d(TAG, "send RoveOut Alert");
+        Intent intent = new Intent();
+        intent.setAction(ROVE_OUT_ALERT);
+        mContext.sendBroadcast(intent);
+    }
+
+    private void setRetryFlag(boolean retryFlag) {
+        mIsImsRetryFlag = retryFlag;
+
+        if (mHandler.hasMessages(EVENT_PDN_RETRY)) {
+            mHandler.removeMessages(EVENT_PDN_RETRY);
+        }
+
+        if (mHandler.hasMessages(EVENT_HANDOVER_EXPIRED)) {
+            mHandler.removeMessages(EVENT_HANDOVER_EXPIRED);
+        }
+        sHandoverRadioType = ConnectivityManager.TYPE_NONE;
     }
 }

@@ -434,4 +434,23 @@ interface INetworkManagementService
 
     void addInterfaceToLocalNetwork(String iface, in List<RouteInfo> routes);
     void removeInterfaceFromLocalNetwork(String iface);
+
+    // MTK
+
+    /**
+     *  sip info
+     * @param interfaceName input
+     * @param service input
+     * @param protocol input
+     * @param result_array output, String[0] = hostname, String[1] = port
+     * @hide
+     */
+    String[] getSipInfo(String interfaceName, String service, String protocol);
+
+    /**
+     *  sip info
+     * @hide
+     * @param interfaceName input
+     */
+    void clearSipInfo(String interfaceName);
 }

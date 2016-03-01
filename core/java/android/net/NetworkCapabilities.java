@@ -162,8 +162,22 @@ public final class NetworkCapabilities implements Parcelable {
      */
     public static final int NET_CAPABILITY_VALIDATED      = 16;
 
+    // MTK
+    /** {@hide} */
+    public static final int NET_CAPABILITY_DM = 16;
+    /** {@hide} */
+    public static final int NET_CAPABILITY_WAP = 17;
+    /** {@hide} */
+    public static final int NET_CAPABILITY_NET = 18;
+    /** {@hide} */
+    public static final int NET_CAPABILITY_CMMAIL = 19;
+    /** {@hide} */
+    public static final int NET_CAPABILITY_TETHERING = 20;
+    /** {@hide} */
+    public static final int NET_CAPABILITY_RCSE = 21;
+
     private static final int MIN_NET_CAPABILITY = NET_CAPABILITY_MMS;
-    private static final int MAX_NET_CAPABILITY = NET_CAPABILITY_VALIDATED;
+    private static final int MAX_NET_CAPABILITY = NET_CAPABILITY_RCSE;
 
     /**
      * Capabilities that are set by default when the object is constructed.
@@ -322,8 +336,18 @@ public final class NetworkCapabilities implements Parcelable {
      */
     public static final int TRANSPORT_VPN = 4;
 
+    // MTK
+    /** {@hide} */
+    public static final int TRANSPORT_TEDONGLE = 5;
+
+    /**
+     * Indicates this network uses a EPDG transport.
+     * {@hide}
+     */
+    public static final int TRANSPORT_EPDG = 6;
+
     private static final int MIN_TRANSPORT = TRANSPORT_CELLULAR;
-    private static final int MAX_TRANSPORT = TRANSPORT_VPN;
+    private static final int MAX_TRANSPORT = TRANSPORT_EPDG;
 
     /**
      * Adds the given transport type to this {@code NetworkCapability} instance.
@@ -396,6 +420,17 @@ public final class NetworkCapabilities implements Parcelable {
     }
     /** @hide */
     public boolean equalsTransportTypes(NetworkCapabilities nc) {
+        // MTK
+        NetworkCapabilities nc1 = new NetworkCapabilities(nc);
+        NetworkCapabilities nc2 = new NetworkCapabilities(this);
+
+        if (nc1.hasTransport(TRANSPORT_EPDG)) {
+            nc1.removeTransportType(TRANSPORT_EPDG);
+        }
+        if (nc2.hasTransport(TRANSPORT_EPDG)) {
+            nc2.removeTransportType(TRANSPORT_EPDG);
+        }
+
         return (nc.mTransportTypes == this.mTransportTypes);
     }
 
@@ -498,7 +533,8 @@ public final class NetworkCapabilities implements Parcelable {
      * @hide
      */
     public void setNetworkSpecifier(String networkSpecifier) {
-        if (TextUtils.isEmpty(networkSpecifier) == false && Long.bitCount(mTransportTypes) != 1) {
+        // MTK: ePDG
+        if (TextUtils.isEmpty(networkSpecifier) == false && Long.bitCount(mTransportTypes) > 2) {
             throw new IllegalStateException("Must have a single transport specified to use " +
                     "setNetworkSpecifier");
         }
@@ -622,6 +658,8 @@ public final class NetworkCapabilities implements Parcelable {
                 case TRANSPORT_BLUETOOTH:   transports += "BLUETOOTH"; break;
                 case TRANSPORT_ETHERNET:    transports += "ETHERNET"; break;
                 case TRANSPORT_VPN:         transports += "VPN"; break;
+                // MTK
+                case TRANSPORT_EPDG:         transports += "EPDG"; break;
             }
             if (++i < types.length) transports += "|";
         }
@@ -646,6 +684,13 @@ public final class NetworkCapabilities implements Parcelable {
                 case NET_CAPABILITY_NOT_RESTRICTED: capabilities += "NOT_RESTRICTED"; break;
                 case NET_CAPABILITY_TRUSTED:        capabilities += "TRUSTED"; break;
                 case NET_CAPABILITY_NOT_VPN:        capabilities += "NOT_VPN"; break;
+                // MTK
+                case NET_CAPABILITY_DM:             capabilities += "DM"; break;
+                case NET_CAPABILITY_WAP:            capabilities += "WAP"; break;
+                case NET_CAPABILITY_NET:            capabilities += "NET"; break;
+                case NET_CAPABILITY_CMMAIL:         capabilities += "CMMAIL"; break;
+                case NET_CAPABILITY_TETHERING:      capabilities += "TETHERING"; break;
+                case NET_CAPABILITY_RCSE:           capabilities += "RCSE"; break;
             }
             if (++i < types.length) capabilities += "&";
         }

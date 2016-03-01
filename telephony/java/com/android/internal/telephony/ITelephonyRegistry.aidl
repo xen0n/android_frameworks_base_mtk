@@ -69,4 +69,10 @@ interface ITelephonyRegistry {
     void notifyVoLteServiceStateChanged(in VoLteServiceState lteState);
     void notifyOemHookRawEventForSubscriber(in int subId, in byte[] rawData);
     void notifySubscriptionInfoChanged();
+
+    // MTK
+    /// M: CC055: Notify Call state with phoneType @{
+    void notifyCallStateForPhoneInfo(in int phoneId, in int phoneType, 
+            in int subId, int state, String incomingNumber);
+    /// @}
 }

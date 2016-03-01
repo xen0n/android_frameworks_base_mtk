@@ -365,4 +365,111 @@ public class NetworkUtils {
         result = builder.toString();
         return result;
     }
+
+    // MTK
+    public /* native */ static int getRaFlags(String interfaceName) {
+        Log.e(TAG, "getRaFlags(" + interfaceName + "): stub!");
+        return 0;
+    }
+
+    public /* native */ static int runPPPOE(String interfaceName, int timeout, String username, String password, int interval, int failure, int mtu, int mru, int mss, DhcpResults ipInfo) {
+        Log.e(TAG, "runPPPOE(" + interfaceName + ", " + timeout + ", " + username + ", " + password + ", " + interval + ", " + failure + ", " + mtu + ", " + mru + ", " + mss + ", " + ipInfo + "): stub!");
+        return 0;
+    }
+    public /* native */ static boolean stopPPPOE(String interfaceName) {
+        Log.e(TAG, "stopPPPOE(" + interfaceName + "): stub!");
+        return true;
+    }
+    public /* native */ static String getPPPOEError() {
+        Log.e(TAG, "getPPPOEError(): stub!");
+        return null;
+    }
+
+    /**
+    add dhcp Inform corresponding java declaration.create them for SIP option
+    */
+    public /* native */ static boolean doSipDhcpRequest(String interfaceName) {
+        Log.e(TAG, "doSipDhcpRequest(" + interfaceName + "): stub!");
+        return true;
+    }
+    public /* native */ static boolean stopSipDhcpRequest(String interfaceName) {
+        Log.e(TAG, "stopSipDhcpRequest(" + interfaceName + "): stub!");
+        return true;
+    }
+
+    /**
+    add dhcpv6 Inform corresponding java declaration.create them for SIP option
+    */
+    public /* native */ static boolean doSipDhcpv6Request(String interfaceName) {
+        Log.e(TAG, "doSipDhcpv6Request(" + interfaceName + "): stub!");
+        return true;
+    }
+    public /* native */ static boolean stopSipDhcpv6Request(String interfaceName) {
+        Log.e(TAG, "stopSipDhcpv6Request(" + interfaceName + "): stub!");
+        return true;
+    }
+
+    /**
+        add dhcpv6 corresponding java declaration, just like dhcpv4.
+     */
+    public /* native */ static boolean runDhcpv6(String interfaceName, DhcpResults dhcpResults) {
+        Log.e(TAG, "runDhcpv6(" + interfaceName + ", " + dhcpResults + "): stub!");
+        return true;
+    }
+    public /* native */ static boolean runDhcpv6Renew(String interfaceName, DhcpResults dhcpResults) {
+        Log.e(TAG, "runDhcpv6Renew(" + interfaceName + ", " + dhcpResults + "): stub!");
+        return true;
+    }
+    public /* native */ static boolean stopDhcpv6(String interfaceName) {
+        Log.e(TAG, "stopDhcpv6(" + interfaceName + "): stub!");
+        return true;
+    }
+    public /* native */ static String getDhcpv6Error() {
+        Log.e(TAG, "getDhcpv6Error(): stub!");
+        return null;
+    }
+
+
+    /**
+        add PD corresponding java declaration.
+     */
+    public /* native */ static boolean runDhcpv6PD(String interfaceName, DhcpResults dhcpResults) {
+        Log.e(TAG, "runDhcpv6PD(" + interfaceName + ", " + dhcpResults + "): stub!");
+        return true;
+    }
+    public /* native */ static boolean runDhcpv6PDRenew(String interfaceName, DhcpResults dhcpResults) {
+        Log.e(TAG, "runDhcpv6PDRenew(" + interfaceName + ", " + dhcpResults + "): stub!");
+        return true;
+    }
+    public /* native */ static boolean stopDhcpv6PD(String interfaceName) {
+        Log.e(TAG, "stopDhcpv6PD(" + interfaceName + "): stub!");
+        return true;
+    }
+    public /* native */ static String getDhcpv6PDError() {
+        Log.e(TAG, "getDhcpv6PDError(): stub!");
+        return null;
+    }
+
+    /// M: utility function - reset the socket connection of the process by uid
+    /**
+     * Reset the socket connection of the process by uid
+     * @param uid the uid of the process
+     * @hide
+     */
+    public /* native */ static int resetConnectionByUid(int uid) {
+        Log.e(TAG, "resetConnectionByUid" + uid + "): stub!");
+        return 0;
+    }
+
+    /// M: utility function - reset the socket connection of the process by uid with special error number
+    /**
+     * Reset the socket connection of the process by uid with special error number
+     * @param uid the uid of the process
+     * @param error number which is expected.
+     * @hide
+     */
+    public /* native */ static int resetConnectionByUidErrNum(int uid, int err) {
+        Log.e(TAG, "resetConnectionByUidErrNum" + uid + ", " + err + "): stub!");
+        return 0;
+    }
 }

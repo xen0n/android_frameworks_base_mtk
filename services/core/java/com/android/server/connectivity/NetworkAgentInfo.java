@@ -68,6 +68,17 @@ public class NetworkAgentInfo {
     // TODO: Fix the network scoring code, remove this, and rename everValidated to validated.
     public boolean lastValidated;
 
+    ///M: Support for ePDG support
+    public HandoverType handoverType;
+
+    /**
+      * State for handover connection phase.
+      *
+      */
+    public enum HandoverType {
+        NONE, CONNECT, DISCONNECT
+    }
+
     // This represents the last score received from the NetworkAgent.
     private int currentScore;
     private boolean isCneWqeEnabled = false;
@@ -137,6 +148,8 @@ public class NetworkAgentInfo {
         }
         everValidated = false;
         lastValidated = false;
+        // MTK
+        handoverType = HandoverType.NONE;
     }
 
     public void addRequest(NetworkRequest networkRequest) {
@@ -161,6 +174,12 @@ public class NetworkAgentInfo {
 
         int score = currentScore;
         if (isCneWqeEnabled) return score;
+
+        ///M: Support for EPDG testing @{
+        if (networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_EPDG)) {
+            return score;
+        }
+        ///@}
 
         if (!everValidated && !pretendValidated) score -= UNVALIDATED_SCORE_PENALTY;
         if (score < 0) score = 0;

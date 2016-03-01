@@ -390,4 +390,63 @@ public class SubscriptionInfo implements Parcelable {
                 + " mnc " + mMnc + " mSubStatus=" + mStatus + " mNwMode=" + mNwMode
                 + " mUserNwMode=" + mUserNwMode + "}";
     }
+
+    // MTK
+
+    /**
+     * Sets the ICC ID
+     * @hide
+     */
+    public void setIccId(String iccId) {
+        this.mIccId = iccId;
+    }
+
+    /**
+     * Sets the slot index of this Subscription's SIM card.
+     * @hide
+     */
+    public void setSimSlotIndex(int slotId) {
+        this.mSimSlotIndex = slotId;
+    }
+
+    /**
+     * Sets the source of the name, eg NAME_SOURCE_UNDEFINED, NAME_SOURCE_DEFAULT_SOURCE,
+     * NAME_SOURCE_SIM_SOURCE or NAME_SOURCE_USER_INPUT.
+     * @hide
+     */
+    public void setNameSource(int nameSource) {
+        this.mNameSource = nameSource;
+    }
+
+    /**
+     * Sets the number of this subscription.
+     * @hide
+     */
+    public void setNumber(String number) {
+        this.mNumber = number;
+    }
+
+    /**
+     * Sets the data roaming value.
+     * @hide
+     */
+    public void setDataRoaming(int roaming) {
+        this.mDataRoaming = roaming;
+    }
+
+    /**
+     * Sets the MCC.
+     * @hide
+     */
+    public void setMcc(int mcc) {
+        this.mMcc = mcc;
+    }
+
+    /**
+     * Sets the MNC.
+     * @hide
+     */
+    public void setMnc(int mnc) {
+        this.mMnc = mnc;
+    }
 }

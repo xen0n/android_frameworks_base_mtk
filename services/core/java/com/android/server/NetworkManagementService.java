@@ -158,6 +158,11 @@ public class NetworkManagementService extends INetworkManagementService.Stub
         public static final int ClatdStatusResult         = 223;
         public static final int V6RtrAdvResult            = 227;
 
+        // MTK
+        // sip info
+        public static final int NetInfoSipResult          = 250;
+        public static final int NetInfoSipError           = 251;
+
         public static final int InterfaceChange           = 600;
         public static final int BandwidthControl          = 601;
         public static final int InterfaceClassActivity    = 613;
@@ -2316,5 +2321,58 @@ public class NetworkManagementService extends INetworkManagementService.Stub
     @Override
     public void removeInterfaceFromLocalNetwork(String iface) {
         modifyInterfaceInNetwork("remove", "local", iface);
+    }
+
+    // MTK
+
+    /**
+     *  sip info
+     * @param interfaceName input
+     * @param service input
+     * @param protocol input
+     * @param result_array output, String[0] = hostname, String[1] = port
+     * @hide
+     */
+    public String[] getSipInfo(String iface, String service, String protocol) {
+        mContext.enforceCallingOrSelfPermission(CONNECTIVITY_INTERNAL, TAG);
+
+        final NativeDaemonEvent event;
+        Log.e(TAG, "getSipInfo:" + iface + " " + service + " " + protocol);
+
+        try {
+            event = mConnector.execute("NetInfo", "getsip", iface, service, protocol);
+        } catch (NativeDaemonConnectorException e) {
+            throw e.rethrowAsParcelableException();
+        }
+
+        event.checkCode(NetdResponseCode.NetInfoSipResult);
+
+        // Rsp: 250 hostname port
+        ArrayList<String> result = new ArrayList<String>();
+        final StringTokenizer st = new StringTokenizer(event.getMessage());
+        while (st.hasMoreTokens()) {
+            result.add(st.nextToken(" "));
+        }
+        if (!result.isEmpty())
+        {
+            Log.e(TAG, "getSipInfo result:" + result);
+            return result.toArray(new String[result.size()]);
+        }
+
+        throw new IllegalStateException("Got an empty sipinfo response");
+    }
+
+    /**
+     *  sip info
+     * @hide
+     * @param interfaceName input
+     */
+    public void clearSipInfo(String iface) {
+        mContext.enforceCallingOrSelfPermission(CONNECTIVITY_INTERNAL, TAG);
+        try {
+            mConnector.execute("NetInfo", "clearsip", iface);
+        } catch (NativeDaemonConnectorException e) {
+            throw e.rethrowAsParcelableException();
+        }
     }
 }

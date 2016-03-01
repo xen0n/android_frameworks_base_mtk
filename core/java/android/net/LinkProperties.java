@@ -58,6 +58,9 @@ public final class LinkProperties implements Parcelable {
     // in the format "rmem_min,rmem_def,rmem_max,wmem_min,wmem_def,wmem_max"
     private String mTcpBufferSizes;
 
+    // MTK
+    private ArrayList<InetAddress> mPcscfes = new ArrayList<InetAddress>();
+
     private static final int MIN_MTU    = 68;
     private static final int MIN_MTU_V6 = 1280;
     private static final int MAX_MTU    = 10000;
@@ -580,8 +583,15 @@ public final class LinkProperties implements Parcelable {
             }
             stacked += "] ";
         }
+
+        // MTK
+        String pcscf = " PcscfAddresses: [";
+        for (InetAddress addr : mPcscfes) {
+            pcscf += addr.getHostAddress() + ",";
+        }
+        pcscf += "] ";
         return "{" + ifaceName + linkAddresses + routes + dns + domainName + mtu
-            + tcpBuffSizes + proxy + stacked + "}";
+            + tcpBuffSizes + proxy + stacked + pcscf + "}";
     }
 
     /**
@@ -1025,6 +1035,11 @@ public final class LinkProperties implements Parcelable {
         }
         ArrayList<LinkProperties> stackedLinks = new ArrayList(mStackedLinks.values());
         dest.writeList(stackedLinks);
+        // MTK
+        dest.writeInt(mPcscfes.size());
+        for (InetAddress d : mPcscfes) {
+            dest.writeByteArray(d.getAddress());
+        }
     }
 
     /**
@@ -1064,6 +1079,13 @@ public final class LinkProperties implements Parcelable {
                 for (LinkProperties stackedLink: stackedLinks) {
                     netProp.addStackedLink(stackedLink);
                 }
+                // MTK
+                addressCount = in.readInt();
+                for (int i = 0; i < addressCount; i++) {
+                    try {
+                        netProp.addPcscfServer(InetAddress.getByAddress(in.createByteArray()));
+                    } catch (UnknownHostException e) { }
+                }
                 return netProp;
             }
 
@@ -1084,4 +1106,46 @@ public final class LinkProperties implements Parcelable {
             }
             return false;
         }
+
+    // MTK
+
+    /**
+     * Adds the given {@link InetAddress} to the list of P-CSCF servers, if not present.
+     *
+     * @param pcscfServer The {@link InetAddress} to add to the list of P-CSCF servers.
+     * @return true if the P-CSCF server was added, false if it was already present.
+     * @hide
+     */
+    public boolean addPcscfServer(InetAddress pcscfServer) {
+        if (pcscfServer != null && !mPcscfes.contains(pcscfServer)) {
+            mPcscfes.add(pcscfServer);
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Replaces the P-CSCF servers in this {@code LinkProperties} with
+     * the given {@link Collection} of {@link InetAddress} objects.
+     *
+     * @param pcscfServers The {@link Collection} of P-CSCF servers to set in this object.
+     * @hide
+     */
+    public void setPcscfServers(Collection<InetAddress> pcscfServers) {
+        mPcscfes.clear();
+        for (InetAddress pcscfServer: pcscfServers) {
+            addPcscfServer(pcscfServer);
+        }
+    }
+
+    /**
+     * Returns all the {@link InetAddress} for P-CSCF servers on this link.
+     *
+     * @return An umodifiable {@link List} of {@link InetAddress} for P-CSCF servers on
+     *         this link.
+     * @hide
+     */
+    public List<InetAddress> getPcscfServers() {
+        return Collections.unmodifiableList(mPcscfes);
+    }
 }

@@ -298,6 +298,14 @@ public class ConnectivityManager {
      */
     public static final String EXTRA_IS_CAPTIVE_PORTAL = "captivePortal";
 
+    // MTK
+    /**
+     * Alert need to send when user moves out of Wifi area
+     * and no LTE is available to clamp on
+     * @hide
+     */
+    public static final String ROVE_OUT_ALERT = "android.net.conn.ROVE_OUT_ALERT";
+
     /**
      * The absence of a connection type.
      * @hide
@@ -420,11 +428,41 @@ public class ConnectivityManager {
      */
     public static final int TYPE_VPN = 17;
 
+    // MTK
+
+    /**
+     * Device Managment purpose.
+     * {@hide}
+     * @internal
+     */
+    public static final int TYPE_MOBILE_DM = 34;
+    /** {@hide} */
+    public static final int TYPE_MOBILE_WAP = 35;
+    /** {@hide} */
+    public static final int TYPE_MOBILE_NET = 36;
+    /** {@hide} */
+    public static final int TYPE_MOBILE_CMMAIL = 37;
+    /** {@hide} */
+    public static final int TYPE_MOBILE_TETHERING = 38;
+    /** {@hide} */
+    public static final int TYPE_MOBILE_RCSE = 39;
+    /** {@hide} */
+    public static final int TYPE_MOBILE_XCAP = 40;
+    /** {@hide} */
+    public static final int TYPE_MOBILE_RCS = 41;
+    /** {@hide} */
+    public static final int TYPE_EPDG = 42;
+    /** {@hide} */
+    public static final int TYPE_TEDONGLE = 49;
+
     /** {@hide} */
     public static final int MAX_RADIO_TYPE   = TYPE_VPN;
 
     /** {@hide} */
-    public static final int MAX_NETWORK_TYPE = TYPE_VPN;
+    public static final int MAX_AOSP_NETWORK_TYPE = TYPE_VPN;
+
+    /** {@hide} */
+    public static final int MAX_NETWORK_TYPE = TYPE_TEDONGLE;
 
     /**
      * If you want to set the default network preference,you can directly
@@ -469,7 +507,7 @@ public class ConnectivityManager {
      * @return a boolean.  {@code true} if the type is valid, else {@code false}
      */
     public static boolean isNetworkTypeValid(int networkType) {
-        return networkType >= 0 && networkType <= MAX_NETWORK_TYPE;
+        return (networkType >= 0 && networkType <= MAX_AOSP_NETWORK_TYPE) || (networkType >= TYPE_MOBILE_DM && networkType <= MAX_NETWORK_TYPE);
     }
 
     /**
@@ -516,6 +554,13 @@ public class ConnectivityManager {
                 return "MOBILE_EMERGENCY";
             case TYPE_PROXY:
                 return "PROXY";
+            // MTK
+            case TYPE_MOBILE_XCAP:
+                return "MOBILE_XCAP";
+            case TYPE_MOBILE_RCS:
+                return "MOBILE_RCS";
+            case TYPE_EPDG:
+                return "EPDG";
             default:
                 return Integer.toString(type);
         }
@@ -540,6 +585,8 @@ public class ConnectivityManager {
             case TYPE_MOBILE_CBS:
             case TYPE_MOBILE_IA:
             case TYPE_MOBILE_EMERGENCY:
+            case TYPE_MOBILE_XCAP:
+            case TYPE_MOBILE_RCS:
                 return true;
             default:
                 return false;
@@ -1057,6 +1104,12 @@ public class ConnectivityManager {
                 cap = NetworkCapabilities.NET_CAPABILITY_IMS;
             } else if ("enableCBS".equals(feature)) {
                 cap = NetworkCapabilities.NET_CAPABILITY_CBS;
+            }
+            // MTK
+            else if ("enableXCAP".equals(feature)) {
+                cap = NetworkCapabilities.NET_CAPABILITY_XCAP;
+            } else if ("enableRCS".equals(feature)) {
+                cap = NetworkCapabilities.NET_CAPABILITY_RCS;
             } else {
                 return null;
             }
@@ -1122,6 +1175,14 @@ public class ConnectivityManager {
         } else if (netCap.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)) {
             type = "enableHIPRI";
             result = TYPE_MOBILE_HIPRI;
+        }
+        // MTK
+        else if (netCap.hasCapability(NetworkCapabilities.NET_CAPABILITY_XCAP)) {
+            type = "enableXCAP";
+            result = TYPE_MOBILE_XCAP;
+        } else if (netCap.hasCapability(NetworkCapabilities.NET_CAPABILITY_RCS)) {
+            type = "enableRCS";
+            result = TYPE_MOBILE_RCS;
         }
         if (type != null) {
             NetworkCapabilities testCap = networkCapabilitiesForFeature(TYPE_MOBILE, type);
@@ -1753,6 +1814,20 @@ public class ConnectivityManager {
     public static final int TETHER_ERROR_DISABLE_NAT_ERROR    = 9;
     /** {@hide} */
     public static final int TETHER_ERROR_IFACE_CFG_ERROR      = 10;
+
+    // MTK
+    /** {@hide}
+     * @internal
+     */
+    public static final int TETHER_ERROR_IPV6_NO_ERROR      = 0x10;
+    /** {@hide}
+     * @internal
+     */
+    public static final int TETHER_ERROR_IPV6_AVAIABLE      = 0x20;
+    /** {@hide}
+     * @internal
+     */
+    public static final int TETHER_ERROR_IPV6_UNAVAIABLE      = 0x30;
 
     /**
      * Get a more detailed error code after a Tethering or Untethering
@@ -2623,4 +2698,106 @@ public class ConnectivityManager {
         return NetworkUtils.bindProcessToNetworkForHostResolution(
                 network == null ? NETID_UNSET : network.netId);
     }
+
+    // MTK
+
+    /**
+     * support Tether dediated APN feature  for OP03APNSettingExt
+     * @internal
+     * @return true if tethering is completed or false
+     * @hide
+     */
+    public boolean isTetheringChangeDone() {
+        Log.w(TAG, "isTetheringChangeDone(): stub!");
+        return false;
+        /*
+        try {
+            return mService.isTetheringChangeDone();
+        } catch (RemoteException e) {
+            return false;
+        }
+        */
+    }
+
+    /**
+     * Ipv6 Tethering Feature
+     * @internal
+     * @param enable to set ipv6 tethering function
+     * @hide
+     */
+    public void setTetheringIpv6Enable(boolean enable) {
+        Log.w(TAG, "setTetheringIpv6Enable(" + enable + "): stub!");
+        /*
+        try {
+            mService.setTetheringIpv6Enable(enable);
+        } catch (RemoteException e) { }
+        */
+    }
+
+    /**
+     * Ipv6 Tethering Feature
+     * @internal
+     * @return the value to latest set by setTetheringIpv6Enable
+     * @hide
+     */
+    public boolean getTetheringIpv6Enable() {
+        Log.w(TAG, "getTetheringIpv6Enable(): stub!");
+        return false;
+        /*
+        try {
+            return mService.getTetheringIpv6Enable();
+        } catch (RemoteException e) {
+            return false;
+        }
+        */
+    }
+
+    /**
+     * ePDG Feature.
+     * @param radioType indicate which radio is handoff.
+     * @hide
+     */
+     public void connectToRadio(int radioType) {
+         try {
+             mService.connectToRadio(radioType);
+         } catch (RemoteException e) { }
+     }
+
+    /**
+     * WFC feature.
+     * To get the disconnect cause when the connection is lost.
+     *
+     * @param networkType the type of network.
+     * @return the connection disconnect code.
+     * @hide
+     */
+     public int getDisconnectCause(int networkType) {
+        try {
+             return mService.getDisconnectCause(networkType);
+         } catch (RemoteException e) {
+             return -1;
+         }
+     }
+
+    /**
+     * WFC Feature.
+     * Try to re-connect the connection with radio type.
+     * @param radioType indicate which radio is re-connected.
+     * @hide
+     */
+     public void retryConnectToRadio(int radioType) {
+         try {
+             mService.retryConnectToRadio(radioType);
+         } catch (RemoteException e) { }
+     }
+    /**
+     * WFC Feature.
+     * Send a Rove out alert to inform user to get back into strong wifi area
+     * @hide
+     */
+     public void sendRoveOutAlert() {
+         try {
+             mService.sendRoveOutAlert();
+         } catch (RemoteException e) { }
+     }
 }

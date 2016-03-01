@@ -45,6 +45,7 @@ public class ImsReasonInfo implements Parcelable {
     public static final int TYPE_STATUSCODE = 3;
     public static final int TYPE_MEDIA = 4;
     public static final int TYPE_USER = 5;
+
     /**
      * For registration errors mReasonType set to TYPE_REGISTRATION.
      * mExtraCode will be set to operator specific error code
@@ -247,6 +248,9 @@ public class ImsReasonInfo implements Parcelable {
     public static final int CODE_UT_OPERATION_NOT_ALLOWED = 803;
     public static final int CODE_UT_NETWORK_ERROR = 804;
     public static final int CODE_UT_CB_PASSWORD_MISMATCH = 821;
+    // MTK
+    public static final int CODE_UT_XCAP_403_FORBIDDEN = 830;
+    public static final int CODE_UT_UNKNOWN_HOST = 831;
 
     /**
      * ECBM
@@ -282,6 +286,13 @@ public class ImsReasonInfo implements Parcelable {
      */
     public static final String EXTRA_MSG_SERVICE_NOT_AUTHORIZED
             = "Forbidden. Not Authorized for Service";
+
+    // MTK
+    public static final int CODE_SIP_REDIRECTED_EMERGENCY = 329;
+    public static final int CODE_SIP_WIFI_SIGNAL_LOST = 905;
+    public static final int CODE_SIP_WFC_ISP_PROBLEM = 906;
+    public static final int CODE_SIP_HANDOVER_WIFI_FAIL = 907;
+    public static final int CODE_SIP_HANDOVER_LTE_FAIL = 908;
 
     // For reason type
     public int mReasonType;
