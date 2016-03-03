@@ -994,6 +994,16 @@ interface ITelephony {
     // MTK
 
     /**
+     * Returns the data state for a subId.
+     */
+     int getDataActivityForSubscriber(int subId);
+
+    /**
+     * Returns the data state for a subId.
+     */
+     int getDataStateForSubscriber(int subId);
+
+    /**
      * Set phone radio type and access technology.
      *
      * @param rafs an RadioAccessFamily array to indicate all phone's

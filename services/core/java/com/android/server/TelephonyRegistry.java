@@ -49,6 +49,7 @@ import android.text.TextUtils;
 import android.text.format.Time;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.io.FileDescriptor;
 import java.io.PrintWriter;
@@ -62,6 +63,9 @@ import com.android.internal.telephony.PhoneConstants;
 import com.android.internal.telephony.ServiceStateTracker;
 import com.android.internal.telephony.TelephonyIntents;
 import com.android.server.am.BatteryStatsService;
+
+import com.mediatek.internal.telephony.cdma.CdmaFeatureOptionUtils;
+import com.mediatek.internal.telephony.ltedc.svlte.SvlteUtils;
 
 /**
  * Since phone process can be restarted, this class provides a centralized place
@@ -199,6 +203,14 @@ class TelephonyRegistry extends ITelephonyRegistry.Stub {
     private static final int MSG_USER_SWITCHED = 1;
     private static final int MSG_UPDATE_DEFAULT_SUB = 2;
 
+    // MTK
+    private static final int MSG_UPDATE_PHONE_SUB_ID_MAPPING = 3;
+    private int[] mSubIdMapping;
+    // VoLTE
+    private final String [] mImsApnTypes = {PhoneConstants.APN_TYPE_IMS,
+                                    PhoneConstants.APN_TYPE_EMERGENCY};
+    private HashMap <String, Integer> [] mImsDataConnState;
+
     private final Handler mHandler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
@@ -301,6 +313,10 @@ class TelephonyRegistry extends ITelephonyRegistry.Stub {
         mDataConnectionLinkProperties = new LinkProperties[numPhones];
         mDataConnectionNetworkCapabilities = new NetworkCapabilities[numPhones];
         mCellInfo = new ArrayList<List<CellInfo>>();
+        // MTK
+        mSubIdMapping = new int[numPhones];
+        // VOLTE
+        mImsDataConnState = (HashMap <String, Integer>[]) new HashMap[numPhones];
         for (int i = 0; i < numPhones; i++) {
             mCallState[i] =  TelephonyManager.CALL_STATE_IDLE;
             mDataActivity[i] = TelephonyManager.DATA_ACTIVITY_NONE;
@@ -316,6 +332,10 @@ class TelephonyRegistry extends ITelephonyRegistry.Stub {
             mDataConnectionApn[i] =  "";
             mCellLocation[i] = new Bundle();
             mCellInfo.add(i, null);
+            // MTK
+            mSubIdMapping[i] = SubscriptionManager.getSubIdUsingPhoneId(i); //default subId is -1, -2, ...
+            // VOLTE
+            mImsDataConnState[i] = new HashMap <String, Integer>();
         }
 
         // Note that location can be null for non-phone builds like
@@ -323,6 +343,14 @@ class TelephonyRegistry extends ITelephonyRegistry.Stub {
         if (location != null) {
             for (int i = 0; i < numPhones; i++) {
                 location.fillInNotifierBundle(mCellLocation[i]);
+            }
+        }
+
+        // MTK
+        // VoLTE
+        for (int idx = 0; idx < mImsDataConnState.length; idx++) {
+            for (int i = 0; i < mImsApnTypes.length; i++) {
+                mImsDataConnState[idx].put(mImsApnTypes[i], TelephonyManager.DATA_UNKNOWN);
             }
         }
     }
@@ -1076,6 +1104,10 @@ class TelephonyRegistry extends ITelephonyRegistry.Stub {
             }
             handleRemoveListLocked();
         }
+        // MTK
+        if (CdmaFeatureOptionUtils.isCdmaLteDcSupport()) {
+            subId = SvlteUtils.getSvlteSubIdBySubId(subId);
+        }
         broadcastDataConnectionFailed(reason, apnType, subId);
         broadcastPreciseDataConnectionStateChanged(TelephonyManager.DATA_UNKNOWN,
                 TelephonyManager.NETWORK_TYPE_UNKNOWN, apnType, "", reason, null, "");
@@ -1689,5 +1721,114 @@ class TelephonyRegistry extends ITelephonyRegistry.Stub {
                 mRemoveList.add(r.binder);
             }
         }
+    }
+
+    // MTK
+
+    /// M: CC055: Notify Call state with phoneType @{
+    /* For ECC without SIM or SIP call, subId will be invalid as -1 */
+    /* We cannot obtain Phone object via invalid subId, thus adding phoneId info */
+    public void notifyCallStateForPhoneInfo(int phoneId, int phoneType, int subId,
+            int state, String incomingNumber) {
+        if (!checkNotifyPermission("notifyCallState()")) {
+            return;
+        }
+        if (VDBG) {
+            log("notifyCallStateForPhoneInfo: phoneId=" + phoneId + " phoneType=" + phoneType
+                + " subId=" + subId + " state=" + state + " incomingNumber=" + incomingNumber);
+        }
+        synchronized (mRecords) {
+            if (validatePhoneId(phoneId)) {
+                mCallState[phoneId] = state;
+                mCallIncomingNumber[phoneId] = incomingNumber;
+                for (Record r : mRecords) {
+                    if (r.matchPhoneStateListenerEvent(PhoneStateListener.LISTEN_CALL_STATE) &&
+                            (r.subId == subId) &&
+                            (r.subId != SubscriptionManager.DEFAULT_SUBSCRIPTION_ID)) {
+                        try {
+                            r.callback.onCallStateChanged(state, incomingNumber);
+                        } catch (RemoteException ex) {
+                            mRemoveList.add(r.binder);
+                        }
+                    }
+                }
+            }
+            handleRemoveListLocked();
+        }
+        broadcastCallStateChangedForPhoneInfo(state, incomingNumber, phoneId, phoneType, subId);
+    }
+    /// @}
+
+    /// M: CC055: Notify Call state with phoneType @{
+    /* For ECC without SIM or SIP call, subId will be invalid as -1 */
+    /* We cannot obtain Phone object via invalid subId, thus adding phoneId info */
+    private void broadcastCallStateChangedForPhoneInfo(int state, String incomingNumber,
+            int phoneId, int phoneType, int subId) {
+        long ident = Binder.clearCallingIdentity();
+        try {
+            if (state == TelephonyManager.CALL_STATE_IDLE) {
+                mBatteryStats.notePhoneOff();
+            } else {
+                mBatteryStats.notePhoneOn();
+            }
+        } catch (RemoteException e) {
+            /* The remote entity disappeared, we can safely ignore the exception. */
+        } finally {
+            Binder.restoreCallingIdentity(ident);
+        }
+
+        Intent intent = new Intent(TelephonyManager.ACTION_PHONE_STATE_CHANGED);
+        intent.putExtra(PhoneConstants.STATE_KEY,
+                DefaultPhoneNotifier.convertCallState(state).toString());
+        if (!TextUtils.isEmpty(incomingNumber)) {
+            intent.putExtra(TelephonyManager.EXTRA_INCOMING_NUMBER, incomingNumber);
+        }
+        intent.putExtra(PhoneConstants.SUBSCRIPTION_KEY, subId);
+        intent.putExtra(PhoneConstants.PHONE_KEY, phoneId);
+        intent.putExtra(PhoneConstants.PHONE_TYPE_KEY, phoneType);
+        mContext.sendBroadcastAsUser(intent, UserHandle.ALL,
+                android.Manifest.permission.READ_PHONE_STATE);
+    }
+    /// @}
+
+    // M: Update Mapping when Sub changed.
+    private void onUpdatePhoneSubIdMapping() {
+        if (DBG) log("onUpdatePhoneSubIdMapping E");
+        synchronized(mSubIdMapping) {
+            for (int i = 0; i < mNumPhones; i++) {
+                mSubIdMapping[i] = SubscriptionManager.getSubIdUsingPhoneId(i);
+                log("update phone id:" + i + " is mapping to sub id:" + mSubIdMapping[i]);
+            }
+        }
+        if (DBG) log("onUpdatePhoneSubIdMapping X");
+    }
+
+    // M: get Phone-Sub id mapping.
+    public int getPhoneSubIdMapping(int subId) {
+        int tmpPhoneId = 0;
+        synchronized(mSubIdMapping) {
+            for (int i = 0; i < mNumPhones; i++) {
+                if (mSubIdMapping[i] == subId) {
+                    if (DBG) log("subId:" + subId + " finds phone id:" + i);
+                    return i;
+                }
+            }
+
+            // update the SubId to Phone
+            tmpPhoneId = SubscriptionManager.getPhoneId(subId);
+            // M: [C2K][IRAT] Mapping sub ID to phone ID for IRAT.
+            if (CdmaFeatureOptionUtils.isCdmaLteDcSupport()) {
+                tmpPhoneId = SvlteUtils.getSvltePhoneIdByPhoneId(tmpPhoneId);
+                log("getPhoneSubIdMapping mapping phone ID for IRAT, tmpPhoneId = " + tmpPhoneId);
+            }
+            if (tmpPhoneId < mNumPhones){
+                mSubIdMapping[tmpPhoneId] = subId;
+                log("Can't find in map, update phone id:" + tmpPhoneId + " is mapping to sub id:"
+                    + mSubIdMapping[tmpPhoneId]);
+
+            }
+        }
+
+        return tmpPhoneId;
     }
 }

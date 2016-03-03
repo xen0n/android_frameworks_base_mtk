@@ -89,6 +89,19 @@ public class TelephonyManager {
         static final int NEVER_USE = 2;
     }
 
+    // MTK
+    /**
+     * M: WFC: Wfc preference values
+     *
+     * @hide
+     */
+    public interface WifiCallingPreferences {
+        static final int CELLULAR_ONLY = 0;
+        static final int WIFI_PREFERRED = 1;
+        static final int CELLULAR_PREFERRED = 2;
+        static final int WIFI_ONLY = 3;
+    }
+
     private final Context mContext;
     private SubscriptionManager mSubscriptionManager;
 
@@ -4305,6 +4318,68 @@ public class TelephonyManager {
             setTelephonyProperty(phoneId,
                     TelephonyProperties.PROPERTY_DATA_NETWORK_TYPE,
                     ServiceState.rilRadioTechnologyToString(type));
+        }
+    }
+
+    // MTK
+
+    /**
+     * Returns a constant indicating the type of activity on a data connection
+     * (cellular).
+     *
+     * @see #DATA_ACTIVITY_NONE
+     * @see #DATA_ACTIVITY_IN
+     * @see #DATA_ACTIVITY_OUT
+     * @see #DATA_ACTIVITY_INOUT
+     * @see #DATA_ACTIVITY_DORMANT
+     *
+     * @param subId for which network type is returned
+     */
+    /** {@hide} */
+    public int getDataActivity(int subId) {
+        try {
+            ITelephony telephony = getITelephony();
+            if (telephony != null) {
+                return telephony.getDataActivityForSubscriber(subId);
+            } else {
+                // This can happen when the ITelephony interface is not up yet.
+                return DATA_ACTIVITY_NONE;
+            }
+        } catch (RemoteException ex) {
+            // the phone process is restarting.
+            return DATA_ACTIVITY_NONE;
+        } catch (NullPointerException ex) {
+          // the phone process is restarting.
+          return DATA_ACTIVITY_NONE;
+        }
+    }
+
+    /**
+     * Returns a constant indicating the current data connection state
+     * (cellular).
+     *
+     * @see #DATA_DISCONNECTED
+     * @see #DATA_CONNECTING
+     * @see #DATA_CONNECTED
+     * @see #DATA_SUSPENDED
+     *
+     * @param subId for which network type is returned
+     */
+    /** {@hide} */
+    public int getDataState(int subId) {
+        try {
+            ITelephony telephony = getITelephony();
+            if (telephony != null) {
+                return telephony.getDataStateForSubscriber(subId);
+            } else {
+                // This can happen when the ITelephony interface is not up yet.
+                return DATA_DISCONNECTED;
+            }
+        } catch (RemoteException ex) {
+            // the phone process is restarting.
+            return DATA_DISCONNECTED;
+        } catch (NullPointerException ex) {
+            return DATA_DISCONNECTED;
         }
     }
 }

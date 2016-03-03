@@ -1282,6 +1282,13 @@ public class SubscriptionManager {
 
     /** {@hide} */
     public static boolean isValidPhoneId(int phoneId) {
+        // MTK-START
+        // Add the special handle for SVLTE
+        if ("1".equals(SystemProperties.get("ro.mtk_svlte_support"))) {
+            return (phoneId >= 0 && phoneId < TelephonyManager.getDefault().getPhoneCount())
+                    || phoneId == LTE_DC_PHONE_ID_1 || phoneId == LTE_DC_PHONE_ID_2;
+        }
+        // MTK-END
         return phoneId >= 0 && phoneId < TelephonyManager.getDefault().getPhoneCount();
     }
 
