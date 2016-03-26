@@ -421,6 +421,9 @@ LOCAL_SRC_FILES += \
 	packages/services/Proxy/com/android/net/IProxyCallback.aidl \
 	packages/services/Proxy/com/android/net/IProxyPortListener.aidl \
 	../../vendor/cmsdk/src/java/org/cyanogenmod/internal/themes/IIconCacheManager.aidl \
+	telephony/java/com/mediatek/internal/telephony/ITelephonyEx.aidl \
+    telephony/java/com/mediatek/internal/telephony/gsm/IGsmVideoCallCallback.aidl \
+    telephony/java/com/mediatek/internal/telephony/gsm/IGsmVideoCallProvider.aidl \
 
 # FRAMEWORKS_BASE_JAVA_SRC_DIRS comes from build/core/pathmap.mk
 LOCAL_AIDL_INCLUDES += $(FRAMEWORKS_BASE_JAVA_SRC_DIRS)
