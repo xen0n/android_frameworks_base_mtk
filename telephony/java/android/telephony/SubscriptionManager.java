@@ -1500,7 +1500,6 @@ public class SubscriptionManager {
 
     // MTK
 
-    // xen0n: MTK TODO
     /**
      * Get subId associated with the slotId.
      * @param phoneId the specified phoneId
@@ -1508,7 +1507,6 @@ public class SubscriptionManager {
      * INVALID_SUBSCRIPTION_ID if an invalid phone index
      * @hide
      */
-    /*
     public static int getSubIdUsingPhoneId(int phoneId) {
         if (VDBG) logd("[getSubIdUsingPhoneId]+ phoneId:" + phoneId);
 
@@ -1525,8 +1523,8 @@ public class SubscriptionManager {
 
         return subId;
     }
-    */
 
+    // xen0n: MTK TODO
     /**
      * Set subId as default SubId.
      * @param subId the specified subId
