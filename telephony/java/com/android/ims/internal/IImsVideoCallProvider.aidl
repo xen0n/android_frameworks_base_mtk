@@ -62,4 +62,10 @@ oneway interface IImsVideoCallProvider {
     void requestCallDataUsage();
 
     void setPauseImage(in Uri uri);
+
+    // MTK
+
+    /* M: ViLTE part start */
+    void setUIMode(int mode);
+    /* M: ViLTE part end */
 }
