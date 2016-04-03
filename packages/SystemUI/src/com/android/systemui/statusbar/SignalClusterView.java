@@ -72,6 +72,9 @@ public class SignalClusterView
     private boolean mIsAirplaneMode = false;
     private int mAirplaneIconId = 0;
     private int mLastAirplaneIconId = -1;
+    private boolean mIsVolteMode = false;
+    private int mVolteIconId = 0;
+    private int mLastVolteIconId = -1;
     private String mAirplaneContentDescription;
     private String mWifiDescription;
     private String mEthernetDescription;
@@ -81,9 +84,10 @@ public class SignalClusterView
 
     ViewGroup mEthernetGroup, mWifiGroup;
     View mNoSimsCombo;
-    ImageView mVpn, mEthernet, mWifi, mAirplane, mNoSims, mEthernetDark, mWifiDark, mNoSimsDark;
+    ImageView mVpn, mEthernet, mWifi, mAirplane, mNoSims, mEthernetDark, mWifiDark, mNoSimsDark, /* MTK */ mVolteIcon;
     View mWifiAirplaneSpacer;
     View mWifiSignalSpacer;
+    View mVolteSpacer;  // MTK
     LinearLayout mMobileSignalGroup;
 
     private int mWideTypeIconStartPadding;
@@ -172,7 +176,9 @@ public class SignalClusterView
         mNoSimsCombo    =             findViewById(R.id.no_sims_combo);
         mWifiAirplaneSpacer =         findViewById(R.id.wifi_airplane_spacer);
         mWifiSignalSpacer =           findViewById(R.id.wifi_signal_spacer);
+        mVolteSpacer    =             findViewById(R.id.volte_spacer);
         mMobileSignalGroup = (LinearLayout) findViewById(R.id.mobile_signal_group);
+        mVolteIcon      = (ImageView) findViewById(R.id.volte_indicator);  // MTK
         for (PhoneState state : mPhoneStates) {
             mMobileSignalGroup.addView(state.mMobileGroup);
         }
@@ -452,6 +458,20 @@ public class SignalClusterView
         }
 
         mNoSimsCombo.setVisibility(mNoSimsVisible ? View.VISIBLE : View.GONE);
+
+        // xen0n
+        // VoLTE icon
+        if (mIsVolteMode) {
+            if (mLastVolteIconId != mVolteIconId) {
+                mVolteIcon.setImageResource(mVolteIconId);
+                mLastVolteIconId = mVolteIconId;
+            }
+            mVolteIcon.setVisibility(View.VISIBLE);
+            mVolteSpacer.setVisibility(View.VISIBLE);
+        } else {
+            mVolteIcon.setVisibility(View.GONE);
+            mVolteSpacer.setVisibility(View.GONE);
+        }
     }
 
     public void setIconTint(int tint, float darkIntensity) {
@@ -586,6 +606,23 @@ public class SignalClusterView
             setTint(mMobileType, tint);
             setTint(mMobileRoaming, tint);
         }
+    }
+
+    // MTK
+
+    @Override
+    public void setVolteStatusIcon(final int iconId) {
+        /*
+        if (iconId > 0) {
+            /// M: customize VoLTE icon. @{
+            mSignalClusterExt.customizeVoLTEIcon(mVolteIcon, iconId);
+            /// M: customize VoLTE icon. @}
+        }
+        mVolteIcon.setVisibility(iconId > 0 ? View.VISIBLE : View.GONE);
+        */
+        mIsVolteMode = iconId != 0;
+        mVolteIconId = iconId;
+        apply();
     }
 }
 

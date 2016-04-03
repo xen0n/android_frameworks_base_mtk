@@ -81,6 +81,22 @@
         android:layout_height="4dp"
         android:visibility="gone"
         />
+    <!-- MTK -->
+    <!-- Add for [VOLTE status icon] -->
+    <ImageView
+        android:id="@+id/volte_indicator"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        />
+    <!-- xen0n: android:layout_marginEnd="3dip" -->
+    <View
+        android:id="@+id/volte_spacer"
+        android:layout_width="4dp"
+        android:layout_height="4dp"
+        android:visibility="gone"
+        />
+    <!-- MTK end -->
     <LinearLayout
         android:id="@+id/mobile_signal_group"
         android:layout_height="wrap_content"

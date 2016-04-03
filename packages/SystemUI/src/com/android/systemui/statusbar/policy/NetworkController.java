@@ -49,6 +49,10 @@ public interface NetworkController {
         void setIsAirplaneMode(IconState icon);
 
         void setMobileDataEnabled(boolean enabled);
+
+        // MTK
+
+        void setVolteStatusIcon(final int iconId);
     }
 
     public static class IconState {

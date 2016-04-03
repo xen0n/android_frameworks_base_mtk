@@ -40,6 +40,8 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.util.MathUtils;
 
+import com.android.ims.ImsManager;
+
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.telephony.PhoneConstants;
 import com.android.internal.telephony.TelephonyIntents;
@@ -211,6 +213,7 @@ public class NetworkControllerImpl extends BroadcastReceiver
         filter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
         filter.addAction(ConnectivityManager.INET_CONDITION_ACTION);
         filter.addAction(Intent.ACTION_AIRPLANE_MODE_CHANGED);
+        filter.addAction(ImsManager.ACTION_IMS_STATE_CHANGED);  // xen0n
         mContext.registerReceiver(this, filter, null, mReceiverHandler);
         mListening = true;
 
@@ -388,6 +391,9 @@ public class NetworkControllerImpl extends BroadcastReceiver
                 // emergency state.
                 recalculateEmergency();
             }
+        // xen0n
+        } else if (action.equals(ImsManager.ACTION_IMS_STATE_CHANGED)) {
+            handleIMSAction(intent);
         } else {
             int subId = intent.getIntExtra(PhoneConstants.SUBSCRIPTION_KEY,
                     SubscriptionManager.INVALID_SUBSCRIPTION_ID);
@@ -848,4 +854,33 @@ public class NetworkControllerImpl extends BroadcastReceiver
             return config;
         }
     }
+
+    // MTK
+
+    private void handleIMSAction(Intent intent) {
+        int regState = intent.getIntExtra(ImsManager.EXTRA_IMS_REG_STATE_KEY,
+                ServiceState.STATE_OUT_OF_SERVICE);
+        int phoneId = intent.getIntExtra(ImsManager.EXTRA_PHONE_ID,
+                SubscriptionManager.INVALID_PHONE_INDEX);
+        int imsSubId = SubscriptionManager.getSubIdUsingPhoneId(phoneId);
+        Log.d(TAG,"handleIMSAction regState = " + regState + " phoneId = " + phoneId);
+        int iconId = 0;
+        for (Integer subId : mMobileSignalControllers.keySet()) {
+            MobileSignalController signalController = mMobileSignalControllers.get(subId);
+            if (subId == imsSubId) {
+                // signalController.setImsRegState(regState);
+                iconId = regState == ServiceState.STATE_IN_SERVICE /* &&
+                                     signalController.isLteNetWork() */ ?
+                                     /* xen0n */ R.drawable.stat_sys_volte_xen0n /* getVolteIconId(phoneId) */ : 0;
+                Log.d(TAG,"Set IMS regState with iconId = " + iconId);
+            } else {
+                //Reset all state for other mobilesignalcontroller
+                Log.d(TAG,"Reset ims register state for other sim");
+                // signalController.setImsRegState(-1);
+            }
+        }
+        // In case hot plug, so always to refresh icon state
+        mCallbackHandler.setVolteStatusIcon(iconId);
+    }
+
 }

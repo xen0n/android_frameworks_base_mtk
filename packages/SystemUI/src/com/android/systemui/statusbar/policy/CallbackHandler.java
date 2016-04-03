@@ -178,4 +178,18 @@ public class CallbackHandler extends Handler implements EmergencyListener, Signa
         obtainMessage(MSG_ADD_REMOVE_SIGNAL, listening ? 1 : 0, 0, listener).sendToTarget();
     }
 
+    // MTK
+
+    @Override
+    public void setVolteStatusIcon(final int iconId) {
+        post(new Runnable() {
+            @Override
+            public void run() {
+                for (SignalCallback signalCluster : mSignalCallbacks) {
+                    signalCluster.setVolteStatusIcon(iconId);
+                }
+            }
+        });
+    }
+
 }

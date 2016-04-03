@@ -60,4 +60,10 @@ public class SignalCallbackAdapter implements SignalCallback {
     public void setMobileDataEnabled(boolean enabled) {
     }
 
+    // MTK
+
+    @Override
+    public void setVolteStatusIcon(int iconId) {
+    }
+
 }
