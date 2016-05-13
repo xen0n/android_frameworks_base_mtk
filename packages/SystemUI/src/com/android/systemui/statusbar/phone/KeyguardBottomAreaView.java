@@ -88,6 +88,7 @@ public class KeyguardBottomAreaView extends FrameLayout implements View.OnClickL
     public static final String CAMERA_LAUNCH_SOURCE_AFFORDANCE = "lockscreen_affordance";
     public static final String CAMERA_LAUNCH_SOURCE_WIGGLE = "wiggle_gesture";
     public static final String CAMERA_LAUNCH_SOURCE_POWER_DOUBLE_TAP = "power_double_tap";
+    public static final String CAMERA_LAUNCH_SOURCE_SCREEN_GESTURE = "screen_gesture";
 
     public static final String EXTRA_CAMERA_LAUNCH_SOURCE
             = "com.android.systemui.camera_launch_source";
@@ -129,6 +130,7 @@ public class KeyguardBottomAreaView extends FrameLayout implements View.OnClickL
     private boolean mBottomAreaAttached;
     private final WindowManager.LayoutParams mWindowLayoutParams;
     private OnInterceptTouchEventListener mInterceptTouchListener;
+    private BroadcastReceiver mDevicePolicyReceiver;
 
     private final ServiceConnection mPrewarmConnection = new ServiceConnection() {
 
@@ -179,7 +181,7 @@ public class KeyguardBottomAreaView extends FrameLayout implements View.OnClickL
     private void removeKeyguardBottomArea() {
         if (mBottomAreaAttached) {
             try {
-                mWindowManager.removeViewImmediate(this);
+                mWindowManager.removeView(this);
             } catch (IllegalArgumentException e) {
                 Log.e(TAG, e.getMessage());
             }
@@ -216,6 +218,8 @@ public class KeyguardBottomAreaView extends FrameLayout implements View.OnClickL
         mWindowLayoutParams.flags = WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL |
                 WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN |
                 WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE;
+        mWindowLayoutParams.privateFlags =
+                WindowManager.LayoutParams.PRIVATE_FLAG_NO_MOVE_ANIMATION;
         mWindowLayoutParams.width = WindowManager.LayoutParams.MATCH_PARENT;
         mWindowLayoutParams.height = WindowManager.LayoutParams.WRAP_CONTENT;
         mWindowLayoutParams.format = PixelFormat.TRANSPARENT;
@@ -477,6 +481,7 @@ public class KeyguardBottomAreaView extends FrameLayout implements View.OnClickL
     private void watchForCameraPolicyChanges() {
         final IntentFilter filter = new IntentFilter();
         filter.addAction(DevicePolicyManager.ACTION_DEVICE_POLICY_MANAGER_STATE_CHANGED);
+        mDevicePolicyReceiver = new DevicePolicyBroadcastReceiver();
         getContext().registerReceiverAsUser(mDevicePolicyReceiver,
                 UserHandle.ALL, filter, null, null);
         KeyguardUpdateMonitor.getInstance(mContext).registerCallback(mUpdateMonitorCallback);
@@ -564,7 +569,9 @@ public class KeyguardBottomAreaView extends FrameLayout implements View.OnClickL
 
     public void launchCamera(String source) {
         final Intent intent;
-        if (!mShortcutHelper.isTargetCustom(LockscreenShortcutsHelper.Shortcuts.RIGHT_SHORTCUT)) {
+        if (source.equals(CAMERA_LAUNCH_SOURCE_POWER_DOUBLE_TAP) ||
+                source.equals(CAMERA_LAUNCH_SOURCE_SCREEN_GESTURE) ||
+                !mShortcutHelper.isTargetCustom(LockscreenShortcutsHelper.Shortcuts.RIGHT_SHORTCUT)) {
             intent = getCameraIntent();
         } else {
             intent = mShortcutHelper.getIntent(LockscreenShortcutsHelper.Shortcuts.RIGHT_SHORTCUT);
@@ -774,7 +781,7 @@ public class KeyguardBottomAreaView extends FrameLayout implements View.OnClickL
                 .setDuration(DOZE_ANIMATION_ELEMENT_DURATION);
     }
 
-    private final BroadcastReceiver mDevicePolicyReceiver = new BroadcastReceiver() {
+    private final class DevicePolicyBroadcastReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
             post(new Runnable() {
@@ -895,10 +902,25 @@ public class KeyguardBottomAreaView extends FrameLayout implements View.OnClickL
     }
 
     @Override
+    protected void onAttachedToWindow() {
+        super.onAttachedToWindow();
+        if (mAccessibilityController != null) {
+            mAccessibilityController.addStateChangedCallback(this);
+        }
+        mShortcutHelper.registerAndFetchTargets();
+        updateCustomShortcuts();
+        mUnlockMethodCache.addListener(this);
+        watchForCameraPolicyChanges();
+    }
+
+    @Override
     protected void onDetachedFromWindow() {
         super.onDetachedFromWindow();
         mAccessibilityController.removeStateChangedCallback(this);
-        mContext.unregisterReceiver(mDevicePolicyReceiver);
+        if (mDevicePolicyReceiver != null) {
+            mContext.unregisterReceiver(mDevicePolicyReceiver);
+            mDevicePolicyReceiver = null;
+        }
         mShortcutHelper.cleanup();
         mUnlockMethodCache.removeListener(this);
     }
