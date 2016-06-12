@@ -23,6 +23,7 @@
 
 #include <cstdio>
 
+#include <gui/BufferItem.h>
 #include <gui/CpuConsumer.h>
 #include <gui/BufferItemConsumer.h>
 #include <gui/Surface.h>
