@@ -34,6 +34,10 @@
 #include <camera/Camera.h>
 #include <binder/IMemory.h>
 
+#ifdef MTK_HARDWARE
+#include <camera/MtkCamera.h>
+#endif
+
 using namespace android;
 
 enum {
@@ -98,6 +102,9 @@ public:
 
 private:
     void copyAndPost(JNIEnv* env, const sp<IMemory>& dataPtr, int msgType);
+#ifdef MTK_HARDWARE
+    void copyAndPostExtData(JNIEnv* env, const sp<IMemory>& dataPtr, int msgType);
+#endif
     void clearCallbackBuffers_l(JNIEnv *env, Vector<jbyteArray> *buffers);
     void clearCallbackBuffers_l(JNIEnv *env);
     jbyteArray getCallbackBuffer(JNIEnv *env, Vector<jbyteArray> *buffers, size_t bufferSize);
@@ -352,6 +359,16 @@ void JNICameraContext::postData(int32_t msgType, const sp<IMemory>& dataPtr,
         case 0:
             break;
 
+#ifdef MTK_HARDWARE
+        case MTK_CAMERA_MSG_EXT_DATA:
+            copyAndPostExtData(env, dataPtr, dataMsgType);
+            // post frame metadata to Java
+            if (metadata && (msgType & CAMERA_MSG_PREVIEW_METADATA)) {
+                postMetadata(env, CAMERA_MSG_PREVIEW_METADATA, metadata);
+            }
+            break;
+#endif
+
         default:
             ALOGV("dataCallback(%d, %p)", dataMsgType, dataPtr.get());
             copyAndPost(env, dataPtr, dataMsgType);
@@ -363,6 +380,43 @@ void JNICameraContext::postData(int32_t msgType, const sp<IMemory>& dataPtr,
         postMetadata(env, CAMERA_MSG_PREVIEW_METADATA, metadata);
     }
 }
+
+#ifdef MTK_HARDWARE
+void JNICameraContext::copyAndPostExtData(JNIEnv* env, const sp<IMemory>& dataPtr, int msgType)
+{
+    jbyteArray obj = NULL;
+    uint32_t extMsgType = 0;
+
+    // allocate Java byte array and copy data
+    //
+    MtkCamMsgExtDataHelper MtkExtDataHelper;
+    if  ( MtkExtDataHelper.init(dataPtr) )
+    {
+        const jbyte* data = reinterpret_cast<const jbyte*>(MtkExtDataHelper.getExtParamBase());
+        const size_t size = MtkExtDataHelper.getExtParamSize();
+        const MtkCamMsgExtDataHelper::DataHeader extDataHeader = MtkExtDataHelper.getExtDataHeader();
+        extMsgType = extDataHeader.extMsgType;
+
+        ALOGV("[copyAndPostExtData] Allocating callback buffer");
+        obj = env->NewByteArray(size);
+        if (obj == NULL) {
+            ALOGE("[copyAndPostExtData] Couldn't allocate byte array");
+            env->ExceptionClear();
+        } else {
+            env->SetByteArrayRegion(obj, 0, size, data);
+        }
+
+        MtkExtDataHelper.uninit();
+    }
+
+    // post image data to Java
+    env->CallStaticVoidMethod(mCameraJClass, fields.post_event,
+            mCameraJObjectWeak, msgType, extMsgType, 0, obj);
+    if (obj) {
+        env->DeleteLocalRef(obj);
+    }
+}
+#endif
 
 void JNICameraContext::postDataTimestamp(nsecs_t timestamp, int32_t msgType, const sp<IMemory>& dataPtr)
 {
