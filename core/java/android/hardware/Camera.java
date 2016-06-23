@@ -1451,6 +1451,20 @@ public class Camera {
                         }
                     }
                     break;
+
+                // xen0n
+                case MTK_CAMERA_MSG_EXT_DATA_COMPRESSED_IMAGE:
+                    final int idx = (int) msg.arg2;
+                    final byte[] buf = (byte[]) msg.obj;
+                    final byte[] img = new byte[buf.length - 4];
+                    System.arraycopy(buf, 4, img, 0, img.length);
+                    Log.d(TAG, "MTK_CAMERA_MSG_EXT_DATA_COMPRESSED_IMAGE: idx=" + idx + " image length " + img.length);
+                    // process as a CAMERA_MSG_COMPRESSED_IMAGE
+                    if (mJpegCallback != null) {
+                        mJpegCallback.onPictureTaken(img, mCamera);
+                    }
+                    break;
+
                 case MTK_CAMERA_MSG_EXT_DATA_JPS:
                     if (mStereoCameraJpsCallback != null) {
                         byte[] byteArray = ((byte[]) msg.obj);
