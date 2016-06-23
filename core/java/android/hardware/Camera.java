@@ -7200,18 +7200,44 @@ public class Camera {
     //  int[0]: the total shut count.
     //  int[1]: count-down shut number; 0: the last one shut.
     private static final int MTK_CAMERA_MSG_EXT_DATA_BURST_SHOT         = 0x00000003;
+
+    //
+    //    Continuous Shot
+    //        int[0]: current continuous shut number.
+    private static final int MTK_CAMERA_MSG_EXT_DATA_CONTINUOUS_SHOT    = 0x00000004;
+
     private static final int MTK_CAMERA_MSG_EXT_DATA_OT                 = 0x00000005;
 
     //
     //
-    //FB
+    //  Facebeauty Shot
+    //      int[0]: data type. 0:original image.
     private static final int MTK_CAMERA_MSG_EXT_DATA_FACEBEAUTY         = 0x00000006;
     //
-    //HDR
+    //  MAV Shot
+    //      int[0]: data type. 0:original image.
+    private static final int MTK_CAMERA_MSG_EXT_DATA_MAV                = 0x00000007;
+
+    //
+    //  HDR Shot
+    //      int[0]: data type. 0:0EV image.
     private static final int MTK_CAMERA_MSG_EXT_DATA_HDR                = 0x00000008;
     //
-    //!--
-    //Stereo Camera JPS
+    // Motion Track
+    //  Params:
+    //      int[0]: 0: frame EIS, 1: captured image, 2: blended image, 3: intermediate data
+    //      int[1~]:depends on
+    //
+    private static final int MTK_CAMERA_MSG_EXT_DATA_MOTIONTRACK        = 0x00000009;
+
+    //
+    //  Compressed Image (not disable CAMERA_MSG_COMPRESSED_IMAGE)
+    //      int[0]: current shut index; 0: the first one shut.
+    private static final int MTK_CAMERA_MSG_EXT_DATA_COMPRESSED_IMAGE   = 0x00000010;
+
+    //
+    //  Stereo Shot
+    //      int[0]: data type.
     private static final int MTK_CAMERA_MSG_EXT_DATA_JPS                = 0x00000011;
 
     //Stereo Debug Data
