@@ -1311,6 +1311,21 @@ public class Camera {
                     }
                     break;
 
+                // xen0n
+                case MTK_CAMERA_MSG_EXT_NOTIFY_CAPTURE_DONE:
+                    Log.d(TAG, "MTK_CAMERA_MSG_EXT_NOTIFY_CAPTURE_DONE: stub!");
+                    break;
+
+                // xen0n
+                case MTK_CAMERA_MSG_EXT_NOTIFY_SHUTTER:
+                    final boolean playSound = ((int)msg.arg2 != 0);
+                    Log.d(TAG, "MTK_CAMERA_MSG_EXT_NOTIFY_SHUTTER: playSound=" + playSound);
+                    // process as a CAMERA_MSG_SHUTTER
+                    if (playSound && mShutterCallback != null) {
+                        mShutterCallback.onShutter();
+                    }
+                    break;
+
                 case MTK_CAMERA_MSG_EXT_NOTIFY_RAW_DUMP_STOPPED:
                     if (mPreviewRawDumpCallback != null)
                     {
