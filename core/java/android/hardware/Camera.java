@@ -7141,15 +7141,29 @@ public class Camera {
     // Auto Scene Detection
     private static final int MTK_CAMERA_MSG_EXT_NOTIFY_ASD              = 0x00000002;
     //
+    //  Multi Angle View
+    private static final int MTK_CAMERA_MSG_EXT_NOTIFY_MAV               = 0x00000003;  // xen0n
+    //
     // Burst Shutter Callback
     //  ext2: 0:not the last one, 1:the last one
     private static final int MTK_CAMERA_MSG_EXT_NOTIFY_BURST_SHUTTER    = 0x00000004;
+    //
+    // Continuous Shutter Callback
+    //  ext2: current continuous shutter number.
+    private static final int MTK_CAMERA_MSG_EXT_NOTIFY_CONTINUOUS_SHUTTER= 0x00000005;  // xen0n
     //
     // End notify for Continuous shot
     private static final int MTK_CAMERA_MSG_EXT_NOTIFY_CONTINUOUS_END   = 0x00000006;
     //
     // Last preview frame showed when capture in ZSD mode
     private static final int MTK_CAMERA_MSG_EXT_NOTIFY_ZSD_PREVIEW_DONE = 0x00000007;
+    //
+    // Capture done (disable CAMERA_MSG_SHUTTER / CAMERA_MSG_COMPRESSED_IMAGE)
+    private static final int MTK_CAMERA_MSG_EXT_NOTIFY_CAPTURE_DONE      = 0x00000010;  // xen0n
+    //
+    // Shutter Callback (not disable CAMERA_MSG_SHUTTER)
+    //  ext2: 1: CameraService will play shutter sound.
+    private static final int MTK_CAMERA_MSG_EXT_NOTIFY_SHUTTER           = 0x00000011;  // xen0n
     //
     // Raw Dump mode Stopped
     private static final int MTK_CAMERA_MSG_EXT_NOTIFY_RAW_DUMP_STOPPED  = 0x00000012;
