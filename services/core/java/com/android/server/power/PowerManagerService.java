@@ -3584,6 +3584,18 @@ public final class PowerManagerService extends SystemService
                         } else {
                             Slog.w(TAG, "Not waking up.  Proximity sensor blocked.");
                         }
+
+                        // Workaround Meizu MX4's peculiar proximity sensor
+                        // behavior where touchscreen gesture events are
+                        // permanently lost after proximity block.
+                        // Re-calibrate the proximity sensor does it.
+                        // Because the re-calibration generally fixes a lot
+                        // of related problems, we'd better always run it.
+                        // Hopefully the re-calibration won't lead to some
+                        // unusably small threshold as we're already "near"
+                        // at this point...
+                        // TODO: use a proper CMSDK config to control this
+                        SystemProperties.set("ctl.start", "ps_calibrate");
                     }
 
                     @Override
