@@ -2062,6 +2062,10 @@ public class PhoneWindowManager implements WindowManagerPolicy {
             mHasNavigationBar = true;
         }
 
+        // Meizu MX circle: exhibit MX circle behavior iff navigation bar is absent.
+        // TODO: allow this to be configurable
+        mShouldExhibitMxCircleBehavior = !mHasNavigationBar;
+
         // For demo purposes, allow the rotation of the HDMI display to be controlled.
         // By default, HDMI locks rotation to landscape.
         if ("portrait".equals(SystemProperties.get("persist.demo.hdmirotation"))) {
