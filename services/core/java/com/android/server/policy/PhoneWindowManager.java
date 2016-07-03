@@ -241,6 +241,12 @@ public class PhoneWindowManager implements WindowManagerPolicy {
     private static final int KEY_MASK_CAMERA = 0x20;
     private static final int KEY_MASK_VOLUME = 0x40;
 
+    // Meizu MX circle: Side of the circle in current rotation.
+    private static final int MX_CIRCLE_TOP = Surface.ROTATION_0;
+    private static final int MX_CIRCLE_RIGHT = Surface.ROTATION_90;
+    private static final int MX_CIRCLE_BOTTOM = Surface.ROTATION_180;
+    private static final int MX_CIRCLE_LEFT = Surface.ROTATION_270;
+
 
     /**
      * These are the system UI flags that, when changing, can cause the layout
@@ -755,6 +761,10 @@ public class PhoneWindowManager implements WindowManagerPolicy {
     private boolean mTopWindowIsKeyguard;
     private CMHardwareManager mCMHardware;
     private boolean mShowKeyguardOnLeftSwipe;
+
+    // Meizu MX circle
+    boolean mShouldExhibitMxCircleBehavior = true;  // TODO
+    int mMxCircleDisplaySide;
 
     private class PolicyHandler extends Handler {
         @Override
@@ -1617,7 +1627,9 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         mWakeGestureListener = new MyWakeGestureListener(mContext, mHandler);
         mOrientationListener = new MyOrientationListener(mContext, mHandler);
         try {
-            mOrientationListener.setCurrentRotation(windowManager.getRotation());
+            final int rotation = windowManager.getRotation();
+            mOrientationListener.setCurrentRotation(rotation);
+            setMxCircleDisplaySideFromRotation(rotation);
         } catch (RemoteException ex) { }
         mSettingsObserver = new SettingsObserver(mHandler);
         mShortcutManager = new ShortcutManager(context);
@@ -6882,6 +6894,31 @@ public class PhoneWindowManager implements WindowManagerPolicy {
     @Override
     public void setRotationLw(int rotation) {
         mOrientationListener.setCurrentRotation(rotation);
+        setMxCircleDisplaySideFromRotation(rotation);
+    }
+
+    private void setMxCircleDisplaySideFromRotation(final int rotation) {
+        // Meizu MX circle: track current rotation for determining the circle's
+        // side (which is always at physical bottom for all devices with a MX
+        // circle design)
+        if (mShouldExhibitMxCircleBehavior) {
+            mMxCircleDisplaySide = mxCircleSideFromRotation(rotation);
+            Slog.d(TAG, "MX circle: rotation=" + rotation + " side=" + mMxCircleDisplaySide);
+        }
+    }
+
+    private int mxCircleSideFromRotation(final int rotation) {
+        if (rotation == mPortraitRotation) {
+            return MX_CIRCLE_BOTTOM;
+        } else if (rotation == mUpsideDownRotation) {
+            return MX_CIRCLE_TOP;
+        } else if (rotation == mLandscapeRotation) {
+            return MX_CIRCLE_RIGHT;
+        } else if (rotation == mSeascapeRotation) {
+            return MX_CIRCLE_LEFT;
+        }
+        // should never happen
+        return MX_CIRCLE_BOTTOM;
     }
 
     private boolean isLandscapeOrSeascape(int rotation) {
