@@ -1753,18 +1753,33 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                 new SystemGesturesPointerEventListener.Callbacks() {
                     @Override
                     public void onSwipeFromTop() {
+                        if (mShouldExhibitMxCircleBehavior &&
+                                mMxCircleDisplaySide == MX_CIRCLE_TOP) {
+                            Slog.d(TAG, "MX circle: swiped from top!");
+                        }
+
                         if (mStatusBar != null) {
                             requestTransientBars(mStatusBar);
                         }
                     }
                     @Override
                     public void onSwipeFromBottom() {
+                        if (mShouldExhibitMxCircleBehavior &&
+                                mMxCircleDisplaySide == MX_CIRCLE_BOTTOM) {
+                            Slog.d(TAG, "MX circle: swiped from bottom!");
+                        }
+
                         if (mNavigationBar != null && mNavigationBarOnBottom) {
                             requestTransientBars(mNavigationBar);
                         }
                     }
                     @Override
                     public void onSwipeFromRight() {
+                        if (mShouldExhibitMxCircleBehavior &&
+                                mMxCircleDisplaySide == MX_CIRCLE_RIGHT) {
+                            Slog.d(TAG, "MX circle: swiped from right!");
+                        }
+
                         if (mNavigationBar != null && !mNavigationBarOnBottom &&
                                 !mNavigationBarLeftInLandscape) {
                             requestTransientBars(mNavigationBar);
@@ -1772,6 +1787,11 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                     }
                     @Override
                     public void onSwipeFromLeft() {
+                        if (mShouldExhibitMxCircleBehavior &&
+                                mMxCircleDisplaySide == MX_CIRCLE_LEFT) {
+                            Slog.d(TAG, "MX circle: swiped from left!");
+                        }
+
                         if (mNavigationBar != null && !mNavigationBarOnBottom &&
                                 mNavigationBarLeftInLandscape) {
                             requestTransientBars(mNavigationBar);
