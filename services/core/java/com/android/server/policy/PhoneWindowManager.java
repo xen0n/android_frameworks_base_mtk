@@ -765,6 +765,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
     // Meizu MX circle
     boolean mShouldExhibitMxCircleBehavior = true;  // TODO
     int mMxCircleDisplaySide;
+    boolean mHomeMxSwingUpPending;
 
     private class PolicyHandler extends Handler {
         @Override
@@ -1454,6 +1455,34 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                 CMSettings.Secure.CM_SETUP_WIZARD_COMPLETED, 0, UserHandle.USER_CURRENT) != 0;
     }
 
+    private boolean handleHomeMxSwingUp() {
+        if (mShouldExhibitMxCircleBehavior) {
+            if (mHomeMxSwingUpPending) {
+                Slog.v(TAG, "MX circle: home swipe detected!");
+                mHomeMxSwingUpPending = false;
+
+                // also clear double-tap handler
+                mHomeDoubleTapPending = false;
+                mHandler.removeCallbacks(mHomeDoubleTapTimeoutRunnable);
+
+                handleShortPressOnHome();
+            }
+
+            return true;
+        }
+
+        return false;
+    }
+
+    private void handleShortPressOnHomeAsBack() {
+        // On Flyme 5.x, short press on Home is treated exactly like a Back.
+        // TODO: allow Flyme 4.x-like behavior
+        triggerVirtualKeypress(KeyEvent.KEYCODE_BACK);
+    }
+
+    // Meizu MX circle: Actually this is the swing-up behavior of MX circle.
+    // But in case someone mods this via Xposed or something like that,
+    // we have to preserve its semantics.
     private void handleShortPressOnHome() {
         // Turn on the connected TV and switch HDMI input if we're a HDMI playback device.
         getHdmiControl().turnOnTv();
@@ -1565,7 +1594,35 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         public void run() {
             if (mHomeDoubleTapPending) {
                 mHomeDoubleTapPending = false;
+
+                if (mShouldExhibitMxCircleBehavior) {
+                    // also clear MX swing up handler
+                    mHomeMxSwingUpPending = false;
+                    mHandler.removeCallbacks(mHomeMxSwingUpTimeoutRunnable);
+
+                    // invoke the back key instead
+                    // TODO: allow configuration
+                    handleShortPressOnHomeAsBack();
+                    return;
+                }
+
                 handleShortPressOnHome();
+            }
+        }
+    };
+
+    private final Runnable mHomeMxSwingUpTimeoutRunnable = new Runnable() {
+        @Override
+        public void run() {
+            if (mShouldExhibitMxCircleBehavior && mHomeMxSwingUpPending) {
+                mHomeMxSwingUpPending = false;
+
+                // also clear double-tap handler
+                mHomeDoubleTapPending = false;
+                mHandler.removeCallbacks(mHomeDoubleTapTimeoutRunnable);
+
+                // TODO: allow configuration
+                handleShortPressOnHomeAsBack();
             }
         }
     };
@@ -1755,7 +1812,9 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                     public void onSwipeFromTop() {
                         if (mShouldExhibitMxCircleBehavior &&
                                 mMxCircleDisplaySide == MX_CIRCLE_TOP) {
-                            Slog.d(TAG, "MX circle: swiped from top!");
+                            if (handleHomeMxSwingUp()) {
+                                return;
+                            }
                         }
 
                         if (mStatusBar != null) {
@@ -1766,7 +1825,9 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                     public void onSwipeFromBottom() {
                         if (mShouldExhibitMxCircleBehavior &&
                                 mMxCircleDisplaySide == MX_CIRCLE_BOTTOM) {
-                            Slog.d(TAG, "MX circle: swiped from bottom!");
+                            if (handleHomeMxSwingUp()) {
+                                return;
+                            }
                         }
 
                         if (mNavigationBar != null && mNavigationBarOnBottom) {
@@ -1777,7 +1838,9 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                     public void onSwipeFromRight() {
                         if (mShouldExhibitMxCircleBehavior &&
                                 mMxCircleDisplaySide == MX_CIRCLE_RIGHT) {
-                            Slog.d(TAG, "MX circle: swiped from right!");
+                            if (handleHomeMxSwingUp()) {
+                                return;
+                            }
                         }
 
                         if (mNavigationBar != null && !mNavigationBarOnBottom &&
@@ -1789,7 +1852,9 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                     public void onSwipeFromLeft() {
                         if (mShouldExhibitMxCircleBehavior &&
                                 mMxCircleDisplaySide == MX_CIRCLE_LEFT) {
-                            Slog.d(TAG, "MX circle: swiped from left!");
+                            if (handleHomeMxSwingUp()) {
+                                return;
+                            }
                         }
 
                         if (mNavigationBar != null && !mNavigationBarOnBottom &&
@@ -3247,6 +3312,16 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                     return -1;
                 }
 
+                // Meizu MX circle: also delay in case MX behavior is wanted.
+                if (mShouldExhibitMxCircleBehavior) {
+                    mHandler.removeCallbacks(mHomeMxSwingUpTimeoutRunnable);
+                    mHomeMxSwingUpPending = true;
+                    // TODO: perhaps use a different timeout?
+                    mHandler.postDelayed(mHomeMxSwingUpTimeoutRunnable,
+                            ViewConfiguration.getDoubleTapTimeout());
+                    return -1;
+                }
+
                 handleShortPressOnHome();
                 return -1;
             }
@@ -3277,6 +3352,11 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                 if (mHomeDoubleTapPending) {
                     mHomeDoubleTapPending = false;
                     mHandler.removeCallbacks(mHomeDoubleTapTimeoutRunnable);
+                    // also clear MX swing up handler
+                    if (mShouldExhibitMxCircleBehavior) {
+                        mHomeMxSwingUpPending = false;
+                        mHandler.removeCallbacks(mHomeMxSwingUpTimeoutRunnable);
+                    }
                     performKeyAction(mDoubleTapOnHomeBehavior, event);
                     mHomeConsumed = mDoubleTapOnHomeBehavior != KEY_ACTION_SLEEP;
                 } else if (mLongPressOnHomeBehavior == KEY_ACTION_APP_SWITCH
