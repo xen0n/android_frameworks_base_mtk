@@ -1467,6 +1467,9 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                 mHandler.removeCallbacks(mHomeDoubleTapTimeoutRunnable);
 
                 handleShortPressOnHome();
+            } else {
+                Slog.v(TAG, "MX circle: app switch swipe detected!");
+                toggleRecentApps();
             }
 
             return true;
