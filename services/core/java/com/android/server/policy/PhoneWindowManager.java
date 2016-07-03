@@ -766,6 +766,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
     boolean mShouldExhibitMxCircleBehavior = true;  // TODO
     int mMxCircleDisplaySide;
     boolean mHomeMxSwingUpPending;
+    int mHomeMxSwingUpTimeout = 200;  // TODO
 
     private class PolicyHandler extends Handler {
         @Override
@@ -3316,9 +3317,8 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                 if (mShouldExhibitMxCircleBehavior) {
                     mHandler.removeCallbacks(mHomeMxSwingUpTimeoutRunnable);
                     mHomeMxSwingUpPending = true;
-                    // TODO: perhaps use a different timeout?
                     mHandler.postDelayed(mHomeMxSwingUpTimeoutRunnable,
-                            ViewConfiguration.getDoubleTapTimeout());
+                            mHomeMxSwingUpTimeout);
                     return -1;
                 }
 
