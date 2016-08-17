@@ -763,7 +763,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
     private boolean mShowKeyguardOnLeftSwipe;
 
     // Meizu MX circle
-    boolean mShouldExhibitMxCircleBehavior = true;  // TODO
+    boolean mShouldExhibitMxCircleBehavior = true;
     int mMxCircleDisplaySide;
     boolean mHomeMxSwingUpPending;
     int mHomeMxSwingUpTimeout = 200;  // TODO
@@ -2131,9 +2131,15 @@ public class PhoneWindowManager implements WindowManagerPolicy {
             mHasNavigationBar = true;
         }
 
-        // Meizu MX circle: exhibit MX circle behavior iff navigation bar is absent.
-        // TODO: allow this to be configurable
+        // Meizu MX circle: exhibit MX circle behavior if navigation bar is absent,
+        // if not explicitly overridden.
         mShouldExhibitMxCircleBehavior = !mHasNavigationBar;
+        final String mxCircleOverride = SystemProperties.get("persist.xen0n.mx_circle_override");
+        if ("1".equals(mxCircleOverride)) {
+            mShouldExhibitMxCircleBehavior = true;
+        } else if ("0".equals(mxCircleOverride)) {
+            mShouldExhibitMxCircleBehavior = false;
+        }
 
         // For demo purposes, allow the rotation of the HDMI display to be controlled.
         // By default, HDMI locks rotation to landscape.
