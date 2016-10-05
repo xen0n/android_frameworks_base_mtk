@@ -1458,6 +1458,11 @@ public class PhoneWindowManager implements WindowManagerPolicy {
     }
 
     private boolean handleHomeMxSwingUp() {
+        if (isKeyguardShowingAndNotOccluded()) {
+            // don't do anything if keyguard showing
+            return false;
+        }
+
         if (mShouldExhibitMxCircleBehavior) {
             if (mHomeMxSwingUpPending) {
                 Slog.v(TAG, "MX circle: home swipe detected!");
